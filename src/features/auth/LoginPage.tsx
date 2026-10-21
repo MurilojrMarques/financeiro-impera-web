@@ -1,13 +1,15 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Eye, EyeOff, LoaderCircle, TimerOff } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { CheckCircle2, Eye, EyeOff, LoaderCircle, TimerOff } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Notice } from '@/components/feedback/Notice';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
+import { authConfig } from '@/services/auth.service';
 import { ApiError } from '@/types/api.types';
 import { AuthHeading, AuthShell } from './AuthShell';
 import { loginSchema, type LoginForm } from './schemas';
@@ -34,6 +36,11 @@ export default function LoginPage() {
   const next = safeNext(new URLSearchParams(location.search).get('next'));
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  // aviso de sucesso vindo das telas de senha (redefinição ou ativação de conta)
+  const aviso = (location.state as { aviso?: string } | null)?.aviso;
+  // a recuperação por e-mail só é oferecida se o servidor tiver e-mail configurado (padrão: oferece)
+  const config = useQuery({ queryKey: ['auth-config'], queryFn: async () => (await authConfig()).data, staleTime: 300_000, retry: false });
+  const recuperacao = config.data?.recuperacaoSenha ?? true;
 
   useEffect(() => {
     document.title = 'Entrar · Financeiro';
@@ -63,6 +70,12 @@ export default function LoginPage() {
   return (
     <AuthShell>
       <AuthHeading title="Financeiro" subtitle="Entre com sua conta para acessar o painel." />
+
+      {aviso && (
+        <Notice tone="success" icon={CheckCircle2} role="status" className="mb-4">
+          {aviso === 'conta-ativada' ? 'Conta ativada. Entre com a senha que você acabou de definir.' : 'Senha alterada. Entre com a nova senha.'}
+        </Notice>
+      )}
 
       {sessionExpired && (
         <Notice tone="warning" icon={TimerOff} role="alert" className="mb-4">
@@ -110,6 +123,11 @@ export default function LoginPage() {
             </button>
           </div>
           {errors.senha && <p id="senha-erro" role="alert" className="text-xs text-negative">{errors.senha.message}</p>}
+          {recuperacao && (
+            <p className="pt-0.5 text-right text-xs">
+              <Link to="/esqueci-senha" className="text-primary underline-offset-4 hover:underline">Esqueci minha senha</Link>
+            </p>
+          )}
         </div>
 
         {serverError && <Notice tone="danger" role="alert">{serverError}</Notice>}

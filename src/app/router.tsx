@@ -6,6 +6,9 @@ import type { Area } from '@/lib/permissions';
 
 // Code splitting por rota: cada página (e os gráficos) só é baixada quando acessada.
 const LoginPage = lazy(() => import('@/features/auth/LoginPage'));
+const ForgotPasswordPage = lazy(() => import('@/features/auth/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('@/features/auth/ResetPasswordPage'));
+const ActivateAccountPage = lazy(() => import('@/features/auth/ActivateAccountPage'));
 const ForcedPasswordChangePage = lazy(() => import('@/features/auth/ForcedPasswordChangePage'));
 const DashboardPage = lazy(() => import('@/features/dashboard/DashboardPage'));
 const FrontPage = lazy(() => import('@/features/front/FrontPage'));
@@ -33,6 +36,9 @@ const guarded = (path: string, area: Area, Page: ComponentType): RouteObject => 
 
 export const routes: RouteObject[] = [
   { path: '/login', element: <LoginPage /> },
+  { path: '/esqueci-senha', element: <ForgotPasswordPage /> },
+  { path: '/redefinir-senha', element: <ResetPasswordPage /> },
+  { path: '/ativar-conta', element: <ActivateAccountPage /> },
   { path: '/trocar-senha', element: <ForcedPasswordChangePage /> },
   {
     element: <ProtectedRoute />,

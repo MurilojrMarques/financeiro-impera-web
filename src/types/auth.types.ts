@@ -32,6 +32,11 @@ export interface UsuarioAdmin {
   perfil: Perfil;
   ativo: boolean;
   trocaSenhaObrig: boolean;
+  /** convite enviado e ainda não aceito */
+  convitePendente: boolean;
+  /** bloqueio temporário por tentativas de login (ISO), se vigente */
+  bloqueadoAte: string | null;
+  senhaAlteradaEm: string | null;
   ultimoLoginEm: string | null;
   criadoEm: string;
 }

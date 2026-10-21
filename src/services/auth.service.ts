@@ -37,3 +37,15 @@ export const changePassword = (senhaAtual: string, novaSenha: string): Promise<v
 export const sessions = (signal?: AbortSignal): Promise<Result<Sessao[]>> => apiGet<Sessao[]>('/auth/sessions', { signal });
 
 export const revokeSession = (id: string): Promise<void> => apiDelete(`/auth/sessions/${id}`);
+
+/** Recursos de conta do servidor (ex.: se a recuperação por e-mail está configurada). */
+export const authConfig = (signal?: AbortSignal): Promise<Result<{ recuperacaoSenha: boolean }>> => apiGet('/auth/config', { signal });
+
+/** Resposta sempre igual, exista ou não a conta (a API não revela cadastros). */
+export const forgotPassword = (email: string): Promise<unknown> => apiPost('/auth/forgot-password', { email });
+
+export const validarLink = async (token: string): Promise<{ valido: boolean; tipo: 'RESET_SENHA' | 'CONVITE' | null }> =>
+  (await apiPost<{ valido: boolean; tipo: 'RESET_SENHA' | 'CONVITE' | null }>('/auth/link/validar', { token })).data;
+
+export const resetPassword = (token: string, novaSenha: string): Promise<void> => apiNoContent('post', '/auth/reset-password', { token, novaSenha });
+export const activateAccount = (token: string, novaSenha: string): Promise<void> => apiNoContent('post', '/auth/activate', { token, novaSenha });
