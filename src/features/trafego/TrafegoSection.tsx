@@ -49,7 +49,7 @@ const conferenciaRows = (c: TrafegoResumo['conferencia']): Conferencia[] => [
   {
     id: 'down',
     indicador: 'Downsells',
-    nota: 'fora do faturamento; o Front Revenue do Copy os soma',
+    nota: 'não entra no faturamento; só referência',
     redtrack: <CurrencyValue centavos={c.downsellsRedtrackCentavos} />,
     planilha: <span className="text-muted-foreground">—</span>,
     diferenca: <span className="text-muted-foreground">—</span>,
@@ -89,7 +89,7 @@ export function TrafegoSection() {
 
   const avisos: NoticeItem[] = [
     ...(incluiHoje
-      ? [{ key: 'hoje', tone: 'info' as const, content: 'O período inclui hoje, que ainda está em andamento. O Copy e o sistema anterior fecham sempre em ontem: para comparar, escolha um período que termine ontem.' }]
+      ? [{ key: 'hoje', tone: 'info' as const, content: 'O período inclui hoje, que ainda está em andamento: os números de hoje ainda vão crescer. Para fechar um dia, escolha um período que termine ontem.' }]
       : []),
     ...(r?.avisos.map((a) => ({ key: a, tone: 'warning' as const, content: a })) ?? []),
   ];
@@ -178,8 +178,8 @@ export function TrafegoSection() {
         </span>
       ),
     },
-    { id: 'red', header: 'RedTrack (usado na DRE)', align: 'right', cell: (c) => c.redtrack },
-    { id: 'plan', header: 'Planilha Pagah (bruto)', align: 'right', cell: (c) => c.planilha },
+    { id: 'red', header: 'RedTrack (referência)', align: 'right', cell: (c) => c.redtrack },
+    { id: 'plan', header: 'Pagah (usado no faturamento)', align: 'right', cell: (c) => c.planilha },
     { id: 'dif', header: 'Diferença', align: 'right', cell: (c) => c.diferenca },
   ];
 
@@ -189,10 +189,10 @@ export function TrafegoSection() {
 
       <KpiGroup title="Resultado do tráfego">
         <KpiGrid cols={7}>
-          <KpiCard label="Faturamento" value={r?.faturamentoCentavos} loading={loading} hero comparison={cmp(prev?.faturamentoCentavos)} description={r?.conferencia.fonteBase === 'REDTRACK' ? 'Vendas principais + upsell (RedTrack, base da DRE)' : 'Planilha Pagah (RedTrack indisponível)'} />
-          <KpiCard label="Investimento" value={r ? (r.investimentoCentavos ?? undefined) : undefined} loading={loading} unavailableReason="RedTrack não configurado" polarity="down-is-good" comparison={cmp(prev?.investimentoCentavos)} />
+          <KpiCard label="Faturamento" value={r?.faturamentoCentavos} loading={loading} hero comparison={cmp(prev?.faturamentoCentavos)} description="Pagah: compra + upsell + downsell, sem descontar estornos" />
+          <KpiCard label="Investimento" value={r ? (r.investimentoCentavos ?? undefined) : undefined} loading={loading} unavailableReason="RedTrack indisponível ou não configurado" polarity="down-is-good" comparison={cmp(prev?.investimentoCentavos)} />
           <KpiCard label="ROAS" format="ratio" value={r ? (r.roasCentesimos === null ? undefined : r.roasCentesimos / 100) : undefined} loading={loading} unavailableReason={motivo} comparison={cmp(prev?.roasCentesimos == null ? undefined : prev.roasCentesimos / 100)} />
-          <KpiCard label="Pedidos" format="integer" value={r?.pedidos} loading={loading} comparison={cmp(prev?.pedidos)} description="Compras iniciais" />
+          <KpiCard label="Pedidos" format="integer" value={r?.pedidos} loading={loading} comparison={cmp(prev?.pedidos)} description="Compra + upsell + downsell (Pagah)" />
           <KpiCard label="Ticket médio" value={r ? (r.ticketMedioCentavos ?? undefined) : undefined} loading={loading} comparison={cmp(prev?.ticketMedioCentavos)} description="Faturamento ÷ pedidos" />
           <KpiCard label="Sobra do tráfego" highlight value={r ? (r.sobraCentavos ?? undefined) : undefined} loading={loading} unavailableReason={motivo} valueTone={r?.sobraCentavos != null && r.sobraCentavos < 0 ? 'negative' : 'default'} comparison={cmp(prev?.sobraCentavos)} />
           <KpiCard
@@ -237,7 +237,7 @@ export function TrafegoSection() {
           </div>
         )}
         <p className="px-0.5 text-xs leading-relaxed text-muted-foreground">
-          O dia do tráfego segue a janela do RedTrack (ver "Ajustar taxas e linhas"). Pedidos do mesmo cliente enviados juntos contam um frete só.
+          Faturamento e pedidos vêm da Pagah (dia de Brasília, meia-noite a meia-noite); só o investimento vem do RedTrack. A conferência compara com o RedTrack: ele só enxerga vendas atribuídas a campanha. Pedidos do mesmo cliente enviados juntos contam um frete só.
         </p>
       </ContentSection>
 

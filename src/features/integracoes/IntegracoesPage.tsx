@@ -69,6 +69,7 @@ export default function IntegracoesPage() {
 
   const s = status.data;
   const sincronizando = !!s?.sincronizandoAgora;
+  const auto = s?.sincronizacaoAutomatica;
 
   const trigger = useMutation({
     mutationFn: (tipo: 'sincronizar' | 'reconciliar') => (tipo === 'sincronizar' ? integracoesService.sincronizar() : integracoesService.reconciliar()),
@@ -139,7 +140,7 @@ export default function IntegracoesPage() {
         <ErrorState error={status.error} onRetry={() => void status.refetch()} />
       ) : (
         <>
-          <KpiGrid cols={3}>
+          <KpiGrid cols={4}>
             <Card className="flex flex-col justify-between p-4">
               <h3 className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Estado geral</h3>
               <p className="mt-2 flex items-center gap-2 text-lg font-semibold">
@@ -151,6 +152,17 @@ export default function IntegracoesPage() {
               <h3 className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Última sincronização</h3>
               <p className="mt-2 text-lg font-semibold">{s?.ultimaSincronizacao ? <RelativeTime iso={s.ultimaSincronizacao} /> : 'nunca'}</p>
               <p className="mt-1 text-[11px] text-muted-foreground">{formatDateTime(s?.ultimaSincronizacao)}</p>
+            </Card>
+            <Card className="flex flex-col justify-between p-4">
+              <h3 className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Sincronização automática</h3>
+              <p className="mt-2 text-lg font-semibold">
+                {auto?.ativa ? `A cada ${auto.intervaloMinutos >= 60 && auto.intervaloMinutos % 60 === 0 ? `${auto.intervaloMinutos / 60} h` : `${auto.intervaloMinutos} min`}` : s ? 'Desligada' : '—'}
+              </p>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                {auto?.ativa
+                  ? `${auto.proximaEm ? `Próxima por volta de ${formatDateTime(auto.proximaEm)}. ` : ''}${auto.ultimoResultado === 'ERRO' ? 'A última tentativa falhou. ' : ''}Use “Sincronizar agora” para atualizar antes.`
+                  : 'Os dados só são atualizados quando um administrador sincroniza manualmente.'}
+              </p>
             </Card>
             <Card className="flex flex-col justify-between p-4">
               <h3 className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Em execução</h3>

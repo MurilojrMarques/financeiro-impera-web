@@ -31,7 +31,7 @@ export interface TrafegoResumo {
   kitsSemQuantidade: number;
   avisos: string[];
   conferencia: {
-    fonteBase: 'REDTRACK' | 'PLANILHA';
+    fonteBase: 'PAGAH';
     redtrack: { faturamentoCentavos: number; pedidos: number } | null;
     downsellsRedtrackCentavos: number | null;
     planilha: { faturamentoCentavos: number; pedidos: number };

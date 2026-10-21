@@ -235,10 +235,9 @@ function trafego(): TrafegoResumo {
     kitsSemQuantidade: 9,
     avisos: [
       '9 itens sem quantidade no nome do kit: contados como 1 unidade.',
-      'Faturamento, pedidos e investimento vêm do RedTrack (base da DRE); frete e custo de produto usam a planilha Pagah.',
-    ],
+          ],
     conferencia: {
-      fonteBase: 'REDTRACK',
+      fonteBase: 'PAGAH',
       redtrack: { faturamentoCentavos: faturamento, pedidos },
       downsellsRedtrackCentavos: 1_588_800,
       planilha: { faturamentoCentavos: 212_830_544, pedidos: 5240 },

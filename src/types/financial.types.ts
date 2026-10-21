@@ -361,6 +361,14 @@ export interface IntegracaoStatus {
   ultimaSincronizacao: string | null;
   sincronizandoAgora: { fonte: string; desde: string } | null;
   limiteDesatualizadoSegundos: number;
+  /** sincronização automática dentro da API (a cada N minutos); a manual continua disponível */
+  sincronizacaoAutomatica?: {
+    ativa: boolean;
+    intervaloMinutos: number;
+    proximaEm: string | null;
+    ultimaTentativaEm: string | null;
+    ultimoResultado: 'SUCESSO' | 'ERRO' | 'OCUPADO' | null;
+  };
   fontes: FonteStatus[];
 }
 

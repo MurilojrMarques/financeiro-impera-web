@@ -130,7 +130,7 @@ export default function FrontPage() {
 
       <KpiGroup title="Receita do Front">
         <KpiGrid cols={6}>
-          <KpiCard label="Faturamento Front (Pagah)" value={r?.brutoCentavos} loading={loading} highlight hero comparison={cmp(prev?.brutoCentavos)} description="Pagamentos do período (compra + upsell + downsell), sem descontar estornos — mesma base do Copy/Pulso" />
+          <KpiCard label="Faturamento Front (Pagah)" value={r?.brutoCentavos} loading={loading} highlight hero comparison={cmp(prev?.brutoCentavos)} description="Pagamentos do período (compra + upsell + downsell), sem descontar estornos" />
           <KpiCard label="Receita líquida Front" value={r?.receitaCentavos} loading={loading} comparison={cmp(prev?.receitaCentavos)} description="Faturamento menos estornos e chargebacks do critério ativo" />
           <KpiCard label="Compras iniciais" value={r?.porTipo.compras.receitaCentavos} loading={loading} comparison={cmp(prev?.porTipo.compras.receitaCentavos)} description={r ? `${formatInteger(r.porTipo.compras.pedidos)} pedidos` : undefined} />
           <KpiCard label="Upsells" value={r?.porTipo.upsells.receitaCentavos} loading={loading} comparison={cmp(prev?.porTipo.upsells.receitaCentavos)} description={r ? `${formatInteger(r.porTipo.upsells.pedidos)} pedidos` : undefined} />

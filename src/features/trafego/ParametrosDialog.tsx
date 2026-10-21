@@ -152,7 +152,7 @@ function Formulario({ inicial, onClose }: { inicial: TrafegoParametros; onClose:
         </div>
 
         <p className="pt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">Janela do dia</p>
-        <Linha id="p-janela" label="Deslocamento (horas)" hint="-3 alinha o dia ao RedTrack/Copy; 0 = meia-noite de São Paulo">
+        <Linha id="p-janela" label="Deslocamento (horas)" hint="0 = o dia da Pagah (meia-noite a meia-noite de Brasília); só mude se souber o motivo">
           <Input id="p-janela" inputMode="decimal" value={e.deslocamentoH} onChange={(x) => set('deslocamentoH', x.target.value)} className="text-right" />
         </Linha>
 
