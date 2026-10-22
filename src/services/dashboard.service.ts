@@ -19,4 +19,6 @@ export const dashboardService = {
   receitasPorGrupo: getter<ReceitasPorGrupo>('/dashboard/receitas-por-grupo'),
   receitasPorLoja: getter<DimRow[]>('/dashboard/receitas-por-loja'),
   indicadores: getter<Indicador[]>('/dashboard/indicadores'),
+  /** só os nomes existentes no período (lista de filtros), sem calcular relatório */
+  opcoes: getter<string[]>('/dashboard/opcoes'),
 };

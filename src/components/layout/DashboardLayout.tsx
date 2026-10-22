@@ -3,6 +3,7 @@ import { Outlet, ScrollRestoration, useLocation } from 'react-router-dom';
 import { sectionFor } from '@/app/navigation';
 import { LoadingSkeleton } from '@/components/feedback/LoadingSkeleton';
 import { OfflineBanner } from '@/components/feedback/OfflineBanner';
+import { useSyncRefresh } from '@/hooks/useSyncRefresh';
 import { DashboardHeader } from './DashboardHeader';
 import { DashboardNavigation } from './DashboardNavigation';
 import { MobileNav } from './MobileNav';
@@ -11,6 +12,7 @@ import { ResponsiveContainer } from './ResponsiveContainer';
 
 export function DashboardLayout() {
   const { pathname } = useLocation();
+  useSyncRefresh();
 
   // a aba do navegador e o histórico dizem em que seção o usuário está (e leitores de tela anunciam a troca de página)
   useEffect(() => {

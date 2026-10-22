@@ -147,13 +147,18 @@ export default function FrontPage() {
         </KpiGrid>
       </KpiGroup>
 
-      <KpiGroup title="Operação e perdas">
-        <KpiGrid cols={5}>
+      <KpiGroup title="Operação">
+        <KpiGrid cols={4}>
           <KpiCard label="Pedidos" format="integer" value={r?.pedidos} loading={loading} comparison={cmp(prev?.pedidos)} />
           <KpiCard label="Ticket médio" value={r?.ticketMedioCentavos} loading={loading} comparison={cmp(prev?.ticketMedioCentavos)} />
-          <KpiCard label="Comissão" value={r?.comissaoCentavos} loading={loading} estimated={!!r && r.comissaoEstimadaCentavos > 0} comparison={cmp(prev?.comissaoCentavos)} />
-          <KpiCard label="Estornos" value={r?.estornosCentavos} loading={loading} polarity="down-is-good" comparison={cmp(prev?.estornosCentavos)} description={r ? `${r.estornosQtd} pedidos` : undefined} />
-          <KpiCard label="Chargebacks" value={r?.chargebacksCentavos} loading={loading} polarity="down-is-good" comparison={cmp(prev?.chargebacksCentavos)} description={r ? `${r.chargebacksQtd} pedidos` : undefined} />
+          <KpiCard
+            label="Comissão"
+            value={r?.comissaoCentavos}
+            loading={loading}
+            estimated={!!r && r.comissaoEstimadaCentavos > 0}
+            comparison={cmp(prev?.comissaoCentavos)}
+            description="O que a Impera recebe da Pagah: venda menos as taxas da Pagah (não é margem)"
+          />
         </KpiGrid>
       </KpiGroup>
 

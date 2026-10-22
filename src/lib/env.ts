@@ -7,7 +7,7 @@ const schema = z.object({
     .refine((v) => /^\/[^/]/.test(v) || z.string().url().safeParse(v).success, 'use uma URL completa ou um caminho começando com "/" (ex.: /api/v1)')
     .default('http://localhost:3000/api/v1'),
   VITE_API_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
-  VITE_REFRESH_KPI_MS: z.coerce.number().int().min(0).default(60_000),
+  VITE_REFRESH_KPI_MS: z.coerce.number().int().min(0).default(0),
   VITE_REFRESH_STATUS_MS: z.coerce.number().int().min(0).default(30_000),
   VITE_DEFAULT_CRITERIO: z.enum(['MOVIMENTACAO', 'APROVADAS']).default('MOVIMENTACAO'),
   VITE_STALE_AFTER_SECONDS: z.coerce.number().int().positive().default(300),
