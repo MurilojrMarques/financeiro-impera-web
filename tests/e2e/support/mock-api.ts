@@ -212,6 +212,7 @@ function trafego(): TrafegoResumo {
     investimentoCentavos: investimento,
     roasCentesimos: 167,
     cpaCentavos: 24_368,
+    mcBrCentavos: 14_094_088,
     linhas: [
       linha('investimento', 'Investimento em anúncios', '', 'Gasto em anúncios no período, todas as fontes (campanhas do RedTrack)', investimento),
       linha('cartao', 'Taxa de cartão', '10%', '10% sobre o faturamento de R$ 2.113.199,32', taxa),
@@ -362,6 +363,7 @@ function handle(method: string, path: string, p: Params, o: MockOptions): Reply 
       alertas: ALERTAS,
     } };
   }
+  if (path === '/dashboard/trafego') return { meta, data: { investimentoCentavos: 121_189_738, receitaTotalCentavos: 250_000_000, roasTotalCentesimos: 206, fonteInvestimento: 'REDTRACK', mensagem: null } };
   if (path === '/dashboard/evolucao' || path === '/vendas/por-dia') return { meta, data: serie(de, ate, ped(8380), ticket, 'dash') };
   if (path === '/dashboard/distribuicao-receitas') {
     const t = 262_787_728;

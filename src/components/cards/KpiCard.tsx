@@ -19,6 +19,8 @@ export interface KpiCardProps {
   loading?: boolean;
   /** razão exibida quando indisponível */
   unavailableReason?: string;
+  /** a regra de cálculo ainda não foi definida: mostra "Em implementação" em vez de um número */
+  emImplementacao?: boolean;
   /** valor estimado (não confirmado pela fonte) */
   estimated?: boolean;
   /** valor parcial (faltam componentes, ex.: custos não cadastrados) */
@@ -47,11 +49,13 @@ function formatValue(v: number, f: KpiFormat): string {
  * `--kpi-chars` informa quantos caracteres há; a conta de largura é feita pelo navegador com container queries.
  */
 export function KpiCard({
-  label, value, format = 'currency', loading, unavailableReason, estimated, partial, description, comparison, polarity = 'up-is-good', highlight, hero, className, valueTone = 'default',
+  label, value, format = 'currency', loading, unavailableReason, emImplementacao, estimated, partial, description, comparison, polarity = 'up-is-good', highlight, hero, className, valueTone = 'default',
 }: KpiCardProps) {
   let body: ReactNode;
   if (loading) {
     body = <Skeleton className="mt-2 h-7 w-28 max-w-full" />;
+  } else if (emImplementacao) {
+    body = <p className="mt-1.5 text-sm font-medium text-warning">Em implementação</p>;
   } else if (value === undefined) {
     body = (
       <p className="mt-1.5 text-sm font-medium text-muted-foreground" title={unavailableReason}>

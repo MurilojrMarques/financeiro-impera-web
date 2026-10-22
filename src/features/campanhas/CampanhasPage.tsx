@@ -85,7 +85,7 @@ export default function CampanhasPage() {
         <KpiCard label="Vendas com campanha" format="integer" value={r?.vendasComCampanha} loading={cur.isPending} highlight hero />
         <KpiCard label="Vendas sem campanha" format="integer" value={r?.vendasSemCampanha} loading={cur.isPending} description="Sem atribuição (ex.: vendas sem anúncio)" />
         <KpiCard label="Receita" value={r?.receitaCentavos} loading={cur.isPending} comparison={cmp(prev?.receitaCentavos)} />
-        <KpiCard label="Comissão" value={r?.comissaoCentavos} loading={cur.isPending} estimated={!!r && r.comissaoEstimadaCentavos > 0} comparison={cmp(prev?.comissaoCentavos)} />
+        <KpiCard label="Comissão" emImplementacao value={r?.comissaoCentavos} loading={cur.isPending} estimated={!!r && r.comissaoEstimadaCentavos > 0} comparison={cmp(prev?.comissaoCentavos)} />
         <KpiCard label="Cobertura RedTrack" format="percent" value={c?.coberturaPercentual ?? undefined} loading={conciliacao.isPending} unavailableReason={c && c.coberturaPercentual === null ? 'Sem vendas no período' : undefined} description={c ? `${formatInteger(c.vendasComRedtrack)} de ${formatInteger(c.vendasNoPeriodo)} vendas` : undefined} />
         <KpiCard label="Divergências" format="integer" value={dm?.total} loading={divergencias.isPending} polarity="down-is-good" description={c ? `${formatInteger(c.conversoesSemVenda)} conversões sem venda` : undefined} />
       </KpiGrid>

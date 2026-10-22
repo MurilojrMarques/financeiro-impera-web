@@ -1,3 +1,4 @@
+import { EmImplementacao } from '@/components/feedback/EmImplementacao';
 import { useMemo, useState } from 'react';
 import { CurrencyValue } from '@/components/cards/CurrencyValue';
 import { KpiCard } from '@/components/cards/KpiCard';
@@ -98,14 +99,14 @@ export default function FrontPage() {
     { id: 'pct', header: '% upsell', align: 'right', sortable: true, sortValue: (x) => x.pctUpsell, cell: (x) => formatPercentage(x.pctUpsell) },
     { id: 'downs', header: 'Downsells', align: 'right', sortable: true, sortValue: (x) => x.downsells, cell: (x) => formatInteger(x.downsells) },
     { id: 'fat', header: 'Faturamento', align: 'right', sortable: true, mobile: 'value', sortValue: (x) => x.faturamento, cell: (x) => <CurrencyValue centavos={x.faturamento} /> },
-    { id: 'com', header: 'Comissão', align: 'right', sortable: true, sortValue: (x) => x.comissao, cell: (x) => <CurrencyValue centavos={x.comissao} estimated={x.estimada} /> },
+    { id: 'com', header: 'Comissão', align: 'right', sortable: true, sortValue: (x) => x.comissao, cell: () => <EmImplementacao /> },
   ];
   const campCols: Column<(typeof campanhaRows)[number]>[] = [
     { id: 'camp', header: 'Campanha', sortable: true, mobile: 'title', sortValue: (x) => x.campanha.toLocaleLowerCase('pt-BR'), cell: (x) => <span className="font-medium [overflow-wrap:anywhere]">{x.campanha}</span> },
     { id: 'compras', header: 'Compras', align: 'right', sortable: true, sortValue: (x) => x.compras, cell: (x) => formatInteger(x.compras) },
     { id: 'upsells', header: 'Upsells', align: 'right', sortable: true, sortValue: (x) => x.upsells, cell: (x) => formatInteger(x.upsells) },
     { id: 'rec', header: 'Receita', align: 'right', sortable: true, mobile: 'value', sortValue: (x) => x.receita, cell: (x) => <CurrencyValue centavos={x.receita} /> },
-    { id: 'com', header: 'Comissão', align: 'right', sortable: true, sortValue: (x) => x.comissao, cell: (x) => <CurrencyValue centavos={x.comissao} estimated={x.estimada} /> },
+    { id: 'com', header: 'Comissão', align: 'right', sortable: true, sortValue: (x) => x.comissao, cell: () => <EmImplementacao /> },
     { id: 'part', header: 'Participação', align: 'right', sortable: true, sortValue: (x) => x.participacao, cell: (x) => formatPercentage(x.participacao, 1) },
   ];
 
@@ -153,11 +154,12 @@ export default function FrontPage() {
           <KpiCard label="Ticket médio" value={r?.ticketMedioCentavos} loading={loading} comparison={cmp(prev?.ticketMedioCentavos)} />
           <KpiCard
             label="Comissão"
+            emImplementacao
             value={r?.comissaoCentavos}
             loading={loading}
             estimated={!!r && r.comissaoEstimadaCentavos > 0}
             comparison={cmp(prev?.comissaoCentavos)}
-            description="O que a Impera recebe da Pagah: venda menos as taxas da Pagah (não é margem)"
+            description="Fórmula ainda não definida para o Front"
           />
         </KpiGrid>
       </KpiGroup>

@@ -1,9 +1,12 @@
 import { KpiCard } from '@/components/cards/KpiCard';
 import { KpiGrid, KpiGroup } from '@/components/cards/KpiGrid';
 import { formatCurrency } from '@/lib/currency';
+import type { DashboardTrafego } from '@/services/dashboard.service';
 import type { DashboardKpis } from '@/types/financial.types';
 
 interface Props {
+  /** investimento e ROAS total (só ANALISTA+; omitido para os demais perfis) */
+  trafego?: { loading: boolean; data?: DashboardTrafego };
   kpis?: DashboardKpis;
   previous?: DashboardKpis;
   loading: boolean;
@@ -15,7 +18,7 @@ interface Props {
  * Cards da Visão Executiva, em três grupos de 4 (visão geral · receita por grupo · custos e resultado).
  * Valores e totais vêm da API; aqui só se escolhe o que mostrar e como.
  */
-export function KpiSection({ kpis, previous, loading, hasComparison, comparisonLoading }: Props) {
+export function KpiSection({ trafego, kpis, previous, loading, hasComparison, comparisonLoading }: Props) {
   const cmp = (prev: number | null | undefined) => (hasComparison ? { previous: prev, loading: comparisonLoading } : undefined);
   const custos = kpis?.custos;
   const custosDisp = custos && custos.disponivel ? custos : undefined;
@@ -35,14 +38,38 @@ export function KpiSection({ kpis, previous, loading, hasComparison, comparisonL
           <KpiCard label="Ticket médio" value={kpis?.ticketMedioCentavos} loading={loading} comparison={cmp(previous?.ticketMedioCentavos)} />
           <KpiCard
             label="Comissão"
+            emImplementacao
             value={kpis?.comissaoCentavos}
             loading={loading}
             estimated={!!kpis && kpis.comissaoEstimadaCentavos > 0}
             comparison={cmp(previous?.comissaoCentavos)}
-            description={kpis && kpis.pedidosSemComissao > 0 ? `${kpis.pedidosSemComissao} pedidos sem comissão informada` : 'Comissão da operação (X1 = 0)'}
+            description={'Só o Call Center tem fórmula (20% do vendido); veja em Call Center'}
           />
         </KpiGrid>
       </KpiGroup>
+
+      {trafego && (
+        <KpiGroup title="Tráfego">
+          <KpiGrid cols={4}>
+            <KpiCard
+              label="Investimento em tráfego"
+              value={trafego.data ? (trafego.data.investimentoCentavos ?? undefined) : undefined}
+              loading={trafego.loading}
+              unavailableReason={trafego.data?.mensagem ?? 'RedTrack indisponível ou não configurado'}
+              polarity="down-is-good"
+              description="RedTrack (ofertas Pagah), o mesmo investimento do Front"
+            />
+            <KpiCard
+              label="ROAS total da operação"
+              format="ratio"
+              value={trafego.data ? (trafego.data.roasTotalCentesimos === null ? undefined : trafego.data.roasTotalCentesimos / 100) : undefined}
+              loading={trafego.loading}
+              unavailableReason="Sem investimento do RedTrack no período"
+              description={trafego.data ? `Receita total ${formatCurrency(trafego.data.receitaTotalCentavos)} ÷ investimento` : undefined}
+            />
+          </KpiGrid>
+        </KpiGroup>
+      )}
 
       <KpiGroup title="Composição da receita">
         <KpiGrid cols={5}>

@@ -17,6 +17,8 @@ export interface TrafegoResumo {
   /** ROAS × 100 (185 = 1,85) */
   roasCentesimos: number | null;
   cpaCentavos: number | null;
+  /** MC BR do RedTrack: faturamento Front × 70% − investimento × 110% (base da comissão do pessoal); null sem RedTrack */
+  mcBrCentavos: number | null;
   linhas: LinhaCusto[];
   totalCustosCentavos: number | null;
   totalCustosSemInvestimentoCentavos: number;

@@ -194,6 +194,15 @@ export function TrafegoSection() {
           <KpiCard label="ROAS" format="ratio" value={r ? (r.roasCentesimos === null ? undefined : r.roasCentesimos / 100) : undefined} loading={loading} unavailableReason={motivo} comparison={cmp(prev?.roasCentesimos == null ? undefined : prev.roasCentesimos / 100)} />
           <KpiCard label="Pedidos" format="integer" value={r?.pedidos} loading={loading} comparison={cmp(prev?.pedidos)} description="Compra + upsell + downsell (Pagah)" />
           <KpiCard label="Ticket médio" value={r ? (r.ticketMedioCentavos ?? undefined) : undefined} loading={loading} comparison={cmp(prev?.ticketMedioCentavos)} description="Faturamento ÷ pedidos" />
+          <KpiCard
+            label="MC BR"
+            value={r ? (r.mcBrCentavos ?? undefined) : undefined}
+            loading={loading}
+            unavailableReason="RedTrack indisponível ou não configurado"
+            valueTone={r?.mcBrCentavos != null && r.mcBrCentavos < 0 ? 'negative' : 'default'}
+            comparison={cmp(prev?.mcBrCentavos)}
+            description="(Front + Upsell 1 + Downsell 1 + Downsell 2) × 0,70 − investimento × 1,10"
+          />
           <KpiCard label="Sobra do tráfego" highlight value={r ? (r.sobraCentavos ?? undefined) : undefined} loading={loading} unavailableReason={motivo} valueTone={r?.sobraCentavos != null && r.sobraCentavos < 0 ? 'negative' : 'default'} comparison={cmp(prev?.sobraCentavos)} />
           <KpiCard
             label="Margem do tráfego"

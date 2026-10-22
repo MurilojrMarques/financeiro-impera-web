@@ -73,7 +73,7 @@ export default function BackendPage() {
         <KpiCard label="Faturamento Back-end" value={r?.brutoCentavos} loading={loading} highlight hero comparison={cmp(prev?.brutoCentavos)} description={r ? `Valor sem juros. Líquida após estornos: ${formatCurrency(r.receitaCentavos)}` : undefined} />
         <KpiCard label="Pedidos" format="integer" value={r?.pedidos} loading={loading} comparison={cmp(prev?.pedidos)} />
         <KpiCard label="Ticket médio" value={r?.ticketMedioCentavos} loading={loading} comparison={cmp(prev?.ticketMedioCentavos)} />
-        <KpiCard label="Comissão" value={r?.comissaoCentavos} loading={loading} estimated={!!r && r.comissaoEstimadaCentavos > 0} comparison={cmp(prev?.comissaoCentavos)} />
+        <KpiCard label="Comissão" emImplementacao value={r?.comissaoCentavos} loading={loading} estimated={!!r && r.comissaoEstimadaCentavos > 0} comparison={cmp(prev?.comissaoCentavos)} />
         <KpiCard label="Reembolsos" value={refunds} loading={loading} polarity="down-is-good" comparison={cmp(prevRefunds)} description={r ? `${r.estornosQtd} estornos · ${r.chargebacksQtd} chargebacks` : undefined} />
         <KpiCard
           label="Back-end Total (consolidado)"

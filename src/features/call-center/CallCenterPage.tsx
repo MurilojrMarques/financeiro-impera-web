@@ -17,7 +17,7 @@ import { useFilters } from '@/hooks/useFilters';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useReport } from '@/hooks/useReport';
 import { formatCurrency } from '@/lib/currency';
-import { dimLabel, formatInteger } from '@/lib/formatters';
+import { dimLabel } from '@/lib/formatters';
 import { callCenterService } from '@/services/call-center.service';
 import { custosService } from '@/services/custos.service';
 import { ReceitaCustosCallCenter } from './ReceitaCustosCallCenter';
@@ -70,7 +70,7 @@ export default function CallCenterPage() {
       <FilterToolbar extras={KEYS} />
       <OutdatedDataWarning lastSync={cur.data?.meta.ultimaSincronizacao} outdated={cur.data?.meta.dadosDesatualizados} fetchFailed={cur.isError && !!cur.data} />
 
-      <KpiGrid cols={6}>
+      <KpiGrid cols={7}>
         <KpiCard
           label="Faturamento"
           value={rcr?.faturamentoCentavos}
@@ -93,6 +93,7 @@ export default function CallCenterPage() {
           comparison={cmpRc(rcPrev?.sobraCentavos)}
           description="Receita − taxas, frete, produto e custos da operação"
         />
+        <KpiCard label="Comissão" value={comissoes.data?.data.comissaoCentavos} loading={comissoes.isPending} description="20% de tudo que o Call Center vende" />
         <KpiCard label="Margem do Call Center" format="percent" value={rcr?.margemBp == null ? undefined : rcr.margemBp / 100} loading={rcLoading} unavailableReason={semCustos} comparison={cmpRc(rcPrev?.margemBp == null ? undefined : rcPrev.margemBp / 100)} />
       </KpiGrid>
 
@@ -117,9 +118,8 @@ export default function CallCenterPage() {
             description="Campos distintos, nunca somados"
             loading={comissoes.isPending}
             rows={[
-              { label: 'Comissão da operação', value: <CurrencyValue centavos={comissoes.data?.data.comissaoCentavos} estimated={(comissoes.data?.data.comissaoEstimadaCentavos ?? 0) > 0} /> },
+              { label: 'Comissão (20% das vendas)', value: <CurrencyValue centavos={comissoes.data?.data.comissaoCentavos} /> },
               { label: 'Taxa do Call Center', value: <CurrencyValue centavos={comissoes.data?.data.taxaCallCenterCentavos} /> },
-              { label: 'Pedidos sem comissão informada', value: formatInteger(comissoes.data?.data.pedidosSemComissao) },
             ]}
             footer={comissoes.data?.data.observacao}
           />

@@ -1,3 +1,4 @@
+import { EmImplementacao } from '@/components/feedback/EmImplementacao';
 import { CurrencyValue } from '@/components/cards/CurrencyValue';
 import { DataTable, type Column } from '@/components/tables/DataTable';
 import { Badge } from '@/components/ui/badge';
@@ -5,7 +6,7 @@ import { useTableState } from '@/hooks/useTableState';
 import { useFilters } from '@/hooks/useFilters';
 import { usePagedReport } from '@/hooks/useReport';
 import { formatDateTime } from '@/lib/dates';
-import { fonteComissaoLabel, statusLabel, tipoVendaLabel } from '@/lib/formatters';
+import { statusLabel, tipoVendaLabel } from '@/lib/formatters';
 import type { Params } from '@/lib/query-keys';
 import type { PagedResult } from '@/types/api.types';
 import type { ExtraFilterKey } from '@/types/filters.types';
@@ -14,7 +15,6 @@ import type { VendaItem } from '@/types/financial.types';
 type Fetcher = (params: Params, signal: AbortSignal) => Promise<PagedResult<VendaItem>>;
 
 const STATUS_VARIANT = { PAGO: 'positive', ESTORNADO: 'warning', CHARGEBACK: 'negative', PENDENTE_CONCILIACAO: 'info' } as const;
-const ESTIMADA = new Set(['ESTIMADA', 'REGRA_AFILIADO']);
 
 interface Props {
   /** id único da tabela (prefixo dos parâmetros de URL) */
@@ -60,10 +60,7 @@ export function VendasTable({ id, domain, resource, fetcher, title, fixed, keys,
     {
       id: 'comissao', header: 'Comissão', align: 'right',
       cell: (v) => (
-        <span className="inline-flex items-center justify-end gap-1.5" title={`Fonte: ${fonteComissaoLabel(v.comissaoFonte)}`}>
-          <CurrencyValue centavos={v.comissaoCentavos} estimated={ESTIMADA.has(v.comissaoFonte)} />
-          {v.x1 && <Badge variant="gold" title="Venda X1: comissão considerada 0 nos relatórios padrão">X1</Badge>}
-        </span>
+        v.grupo === 'CALL_CENTER' ? <CurrencyValue centavos={v.comissaoCentavos} /> : <EmImplementacao />
       ),
     },
     { id: 'status', header: 'Status', sortable: true, sortKey: 'status', cell: (v) => <Badge variant={STATUS_VARIANT[v.status]}>{statusLabel(v.status)}</Badge> },
@@ -96,8 +93,7 @@ export function VendasTable({ id, domain, resource, fetcher, title, fixed, keys,
             Perda: <CurrencyValue centavos={v.perdaCentavos} className="text-foreground" /> ·
           </>
         )}
-        Comissão: <CurrencyValue centavos={v.comissaoCentavos} estimated={ESTIMADA.has(v.comissaoFonte)} className="text-foreground" />
-        {v.x1 && <Badge variant="gold" title="Venda X1: comissão considerada 0 nos relatórios padrão">X1</Badge>}
+        Comissão: {v.grupo === 'CALL_CENTER' ? <CurrencyValue centavos={v.comissaoCentavos} className="text-foreground" /> : <EmImplementacao />}
       </p>
     </div>
   );

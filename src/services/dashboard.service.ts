@@ -10,7 +10,17 @@ export interface ComparativoDashboard {
 }
 type DashboardKpisLike = Omit<DashboardKpis, 'custos'>;
 
+export interface DashboardTrafego {
+  investimentoCentavos: number | null;
+  receitaTotalCentavos: number;
+  /** ROAS total × 100 (210 = 2,10): receita total de todos os grupos ÷ investimento; null sem investimento */
+  roasTotalCentesimos: number | null;
+  fonteInvestimento: 'REDTRACK' | 'NAO_CONFIGURADO' | 'ERRO';
+  mensagem: string | null;
+}
+
 export const dashboardService = {
+  trafego: getter<DashboardTrafego>('/dashboard/trafego'),
   resumo: getter<DashboardResumo>('/dashboard/resumo'),
   kpis: getter<DashboardKpis>('/dashboard/kpis'),
   evolucao: getter<SerieRow[]>('/dashboard/evolucao'),

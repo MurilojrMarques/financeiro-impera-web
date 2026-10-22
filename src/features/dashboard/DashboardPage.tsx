@@ -1,3 +1,4 @@
+import { EmImplementacao } from '@/components/feedback/EmImplementacao';
 import { useNavigate } from 'react-router-dom';
 import { CurrencyValue } from '@/components/cards/CurrencyValue';
 import { GROUP_COLORS } from '@/components/charts/chart-utils';
@@ -48,6 +49,7 @@ export default function DashboardPage() {
   const cc = useReport('call-center', 'evolucao', callCenterService.evolucao, params, { enabled: analista });
   const recup = useReport('recuperacao', 'evolucao', recuperacaoService.evolucao, params, { enabled: analista });
   const afil = useReport('afiliados', 'evolucao', afiliadosService.evolucao, params, { enabled: analista });
+  const trafego = useReport('dashboard', 'trafego', dashboardService.trafego, params, { enabled: analista });
   const distrib = useReport('dashboard', 'distribuicao', dashboardService.distribuicao, params);
   const lojas = useReport('dashboard', 'receitas-por-loja', dashboardService.receitasPorLoja, params);
   const produtos = useReport('vendas', 'por-produto', vendasService.porProduto, params, { enabled: analista });
@@ -97,7 +99,7 @@ export default function DashboardPage() {
     { id: 'grupo', header: 'Grupo', mobile: 'title', cell: (r) => <span className="font-medium">{r.nome}</span> },
     { id: 'pedidos', header: 'Pedidos', align: 'right', cell: (r) => formatInteger(r.m.pedidos) },
     { id: 'receita', header: 'Receita', align: 'right', mobile: 'value', cell: (r) => <CurrencyValue centavos={r.m.receitaCentavos} /> },
-    { id: 'comissao', header: 'Comissão', align: 'right', cell: (r) => <CurrencyValue centavos={r.m.comissaoCentavos} estimated={r.m.comissaoEstimadaCentavos > 0} /> },
+    { id: 'comissao', header: 'Comissão', align: 'right', cell: (r) => (r.id === 'CALL_CENTER' ? <CurrencyValue centavos={r.m.comissaoCentavos} /> : <EmImplementacao />) },
     { id: 'ticket', header: 'Ticket médio', align: 'right', cell: (r) => <CurrencyValue centavos={r.m.ticketMedioCentavos} /> },
   ];
 
@@ -114,7 +116,7 @@ export default function DashboardPage() {
     },
     { id: 'pedidos', header: 'Pedidos', align: 'right', cell: (r) => formatInteger(r.pedidos) },
     { id: 'fat', header: 'Faturamento', align: 'right', mobile: 'value', cell: (r) => <CurrencyValue centavos={r.faturamentoCentavos} /> },
-    { id: 'com', header: 'Comissão', align: 'right', cell: (r) => <CurrencyValue centavos={r.comissaoCentavos} /> },
+    { id: 'com', header: 'Comissão', align: 'right', cell: () => <EmImplementacao /> },
   ];
 
   const grupoSection = (
@@ -149,6 +151,7 @@ export default function DashboardPage() {
       />
 
       <KpiSection
+        trafego={analista ? { loading: trafego.isPending, data: trafego.data?.data } : undefined}
         kpis={kpis}
         previous={resumo.comparison.data?.data.kpis}
         loading={cur.isPending}
