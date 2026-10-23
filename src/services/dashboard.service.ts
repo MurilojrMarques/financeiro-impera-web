@@ -16,6 +16,8 @@ export interface DashboardTrafego {
   comissaoFrontCentavos: number | null;
   /** Call Center = 20% do vendido */
   comissaoCallCenterCentavos: number;
+  /** Recuperação = (valor líquido × 0,70) × 5% */
+  comissaoRecuperacaoCentavos: number;
   /** Front + Call Center (Backend Outros, Recuperação e Afiliado ainda sem comissão); null sem RedTrack */
   comissaoTotalCentavos: number | null;
   receitaTotalCentavos: number;

@@ -68,7 +68,7 @@ export default function RecuperacaoPage() {
         <KpiCard label="Faturamento" value={r?.brutoCentavos} loading={loading} highlight hero comparison={cmp(prev?.brutoCentavos)} description={r ? `Valor sem juros dos pagamentos. Líquida após estornos: ${formatCurrency(r.receitaCentavos)}` : undefined} />
         <KpiCard label="Pedidos" format="integer" value={r?.pedidos} loading={loading} comparison={cmp(prev?.pedidos)} />
         <KpiCard label="Ticket médio" value={r?.ticketMedioCentavos} loading={loading} comparison={cmp(prev?.ticketMedioCentavos)} />
-        <KpiCard label="Comissão" emImplementacao value={r?.comissaoCentavos} loading={loading} estimated={!!r && r.comissaoEstimadaCentavos > 0} comparison={cmp(prev?.comissaoCentavos)} />
+        <KpiCard label="Comissão" value={r?.comissaoCentavos} loading={loading} comparison={cmp(prev?.comissaoCentavos)} description="(Faturamento líquido × 0,70) × 5%" />
         <KpiCard label="Reembolsos" value={refunds} loading={loading} polarity="down-is-good" comparison={cmp(prevRefunds)} description={r ? `${r.estornosQtd} estornos · ${r.chargebacksQtd} chargebacks` : undefined} />
         <KpiCard label="Taxa do call center" value={r?.taxaCallCenterCentavos} loading={loading} description="Não se aplica a este canal" />
       </KpiGrid>

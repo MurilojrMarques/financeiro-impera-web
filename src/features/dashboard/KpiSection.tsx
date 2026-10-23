@@ -42,7 +42,7 @@ export function KpiSection({ trafego, kpis, previous, loading, hasComparison, co
             value={trafego ? (trafego.data ? (trafego.data.comissaoTotalCentavos ?? undefined) : undefined) : undefined}
             loading={trafego ? trafego.loading : loading}
             unavailableReason="RedTrack indisponível: a comissão do Front depende dele"
-            description={trafego?.data ? `Front (MC BR) ${formatCurrency(trafego.data.comissaoFrontCentavos ?? 0)} + Call Center (20%) ${formatCurrency(trafego.data.comissaoCallCenterCentavos)}. Backend, Recuperação e Afiliados: sem comissão por enquanto` : 'Disponível para ANALISTA ou acima'}
+            description={trafego?.data ? `Front (MC BR) ${formatCurrency(trafego.data.comissaoFrontCentavos ?? 0)} + Call Center (20%) ${formatCurrency(trafego.data.comissaoCallCenterCentavos)} + Recuperação ${formatCurrency(trafego.data.comissaoRecuperacaoCentavos)}. Backend e Afiliados: sem comissão por enquanto` : 'Disponível para ANALISTA ou acima'}
           />
         </KpiGrid>
       </KpiGroup>

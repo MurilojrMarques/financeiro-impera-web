@@ -1,5 +1,6 @@
 import { lazy, type ComponentType } from 'react';
 import { createBrowserRouter, createMemoryRouter, Navigate, type RouteObject } from 'react-router-dom';
+import { RouteError } from '@/components/feedback/RouteError';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedRoute, RequireArea } from '@/features/auth/ProtectedRoute';
 import type { Area } from '@/lib/permissions';
@@ -35,13 +36,14 @@ const guarded = (path: string, area: Area, Page: ComponentType): RouteObject => 
 });
 
 export const routes: RouteObject[] = [
-  { path: '/login', element: <LoginPage /> },
+  { path: '/login', element: <LoginPage />, errorElement: <RouteError /> },
   { path: '/esqueci-senha', element: <ForgotPasswordPage /> },
   { path: '/redefinir-senha', element: <ResetPasswordPage /> },
   { path: '/ativar-conta', element: <ActivateAccountPage /> },
   { path: '/trocar-senha', element: <ForcedPasswordChangePage /> },
   {
     element: <ProtectedRoute />,
+    errorElement: <RouteError />,
     children: [
       {
         element: <DashboardLayout />,

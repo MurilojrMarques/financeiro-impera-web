@@ -60,7 +60,7 @@ export function VendasTable({ id, domain, resource, fetcher, title, fixed, keys,
     {
       id: 'comissao', header: 'Comissão', align: 'right',
       cell: (v) => (
-        v.grupo === 'CALL_CENTER' ? <CurrencyValue centavos={v.comissaoCentavos} /> : <EmImplementacao />
+        v.grupo === 'CALL_CENTER' || v.grupo === 'RECUPERACAO' ? <CurrencyValue centavos={v.comissaoCentavos} /> : <EmImplementacao />
       ),
     },
     { id: 'status', header: 'Status', sortable: true, sortKey: 'status', cell: (v) => <Badge variant={STATUS_VARIANT[v.status]}>{statusLabel(v.status)}</Badge> },
@@ -93,7 +93,7 @@ export function VendasTable({ id, domain, resource, fetcher, title, fixed, keys,
             Perda: <CurrencyValue centavos={v.perdaCentavos} className="text-foreground" /> ·
           </>
         )}
-        Comissão: {v.grupo === 'CALL_CENTER' ? <CurrencyValue centavos={v.comissaoCentavos} className="text-foreground" /> : <EmImplementacao />}
+        Comissão: {v.grupo === 'CALL_CENTER' || v.grupo === 'RECUPERACAO' ? <CurrencyValue centavos={v.comissaoCentavos} className="text-foreground" /> : <EmImplementacao />}
       </p>
     </div>
   );
