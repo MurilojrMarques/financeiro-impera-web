@@ -3,7 +3,8 @@ export type Perfil = 'ADMIN' | 'FINANCEIRO' | 'ANALISTA' | 'LEITURA';
 export interface Usuario {
   id: string;
   nome: string;
-  email: string;
+  email: string | null;
+  usuario: string | null;
   perfil: Perfil;
   trocaSenhaObrigatoria: boolean;
 }
@@ -28,7 +29,8 @@ export interface Sessao {
 export interface UsuarioAdmin {
   id: string;
   nome: string;
-  email: string;
+  email: string | null;
+  usuario: string | null;
   perfil: Perfil;
   ativo: boolean;
   trocaSenhaObrig: boolean;

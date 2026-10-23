@@ -2,9 +2,10 @@ import { ApiError, type Result } from '@/types/api.types';
 import type { AuthPayload, Sessao, Usuario } from '@/types/auth.types';
 import { apiDelete, apiGet, apiNoContent, apiPost, refreshSession, tokenStore } from './api.client';
 
-export async function login(email: string, senha: string): Promise<AuthPayload> {
+/** `credencial` = e-mail ou nome de usuário */
+export async function login(credencial: string, senha: string): Promise<AuthPayload> {
   // o primeiro acesso pelo túnel pode falhar com 502/504 enquanto a conexão "acorda": uma nova tentativa resolve (não conta como senha errada)
-  const tentar = () => apiPost<AuthPayload>('/auth/login', { email, senha });
+  const tentar = () => apiPost<AuthPayload>('/auth/login', { login: credencial, senha });
   const { data } = await tentar().catch(async (e: unknown) => {
     if (e instanceof ApiError && (e.status === 502 || e.status === 504)) return tentar();
     throw e;

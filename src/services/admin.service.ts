@@ -17,8 +17,8 @@ export interface NovaRegraClassificacao {
 
 export const adminService = {
   usuarios: pagedGetter<UsuarioAdmin>('/usuarios'),
-  /** sem senha: o usuário recebe um convite por e-mail e define a própria senha */
-  criarUsuario: (u: { nome: string; email: string; perfil: Perfil }) => apiPost<UsuarioAdmin & { conviteEnviado: boolean }>('/usuarios', u),
+  /** com e-mail e sem senha: convite por e-mail. Sem e-mail, a senha inicial é obrigatória */
+  criarUsuario: (u: { nome: string; email?: string; usuario?: string; perfil: Perfil; senhaTemporaria?: string }) => apiPost<UsuarioAdmin & { conviteEnviado: boolean }>('/usuarios', u),
   reenviarConvite: (id: string) => apiPost<{ enviado: boolean }>(`/usuarios/${id}/reenviar-convite`),
   enviarRedefinicao: (id: string) => apiPost<{ enviado: boolean }>(`/usuarios/${id}/redefinir-senha`),
   desbloquearUsuario: (id: string) => apiPost<UsuarioAdmin>(`/usuarios/${id}/desbloquear`),

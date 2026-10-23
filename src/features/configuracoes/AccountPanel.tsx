@@ -35,7 +35,8 @@ export function AccountPanel() {
         <CardContent>
           <dl className="space-y-2 text-[13px]">
             <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Nome</dt><dd className="min-w-0 truncate text-right">{user?.nome}</dd></div>
-            <div className="flex justify-between gap-4"><dt className="text-muted-foreground">E-mail</dt><dd className="min-w-0 truncate text-right">{user?.email}</dd></div>
+            <div className="flex justify-between gap-4"><dt className="text-muted-foreground">E-mail</dt><dd className="min-w-0 truncate text-right">{user?.email ?? '—'}</dd></div>
+            <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Usuário</dt><dd className="min-w-0 truncate text-right">{user?.usuario ?? '—'}</dd></div>
             <div className="flex justify-between gap-4"><dt className="text-muted-foreground">Perfil</dt><dd><Badge variant="gold">{user?.perfil}</Badge></dd></div>
           </dl>
         </CardContent>

@@ -17,6 +17,7 @@ import { useFilters } from '@/hooks/useFilters';
 import { useReport } from '@/hooks/useReport';
 import { dimLabel, formatInteger, formatPercentage } from '@/lib/formatters';
 import { frontService } from '@/services/front.service';
+import { trafegoService } from '@/services/trafego.service';
 import { vendasService } from '@/services/vendas.service';
 import type { ExtraFilterKey } from '@/types/filters.types';
 import type { DimRow } from '@/types/financial.types';
@@ -45,6 +46,9 @@ export default function FrontPage() {
   const [lista, setLista] = useState<Lista>('todas');
 
   const resumo = useWithComparison('front', 'resumo', frontService.resumo, { keys: KEYS });
+  // comissão do Front = MC BR (RedTrack): mesma consulta do bloco de Tráfego (cache compartilhado)
+  const trafego = useWithComparison('trafego', 'resumo', trafegoService.resumo, { keys: [] });
+  const mcBr = trafego.current.data?.data.mcBrCentavos;
   const evolucao = useReport('front', 'evolucao', frontService.evolucao, params);
   const porLoja = useReport('front', 'por-loja', frontService.porLoja, params);
   const lojaDown = useReport('front', 'por-loja#downsell', frontService.porLoja, { ...params, tipo: 'DOWNSELL' });
@@ -154,12 +158,12 @@ export default function FrontPage() {
           <KpiCard label="Ticket médio" value={r?.ticketMedioCentavos} loading={loading} comparison={cmp(prev?.ticketMedioCentavos)} />
           <KpiCard
             label="Comissão"
-            emImplementacao
-            value={r?.comissaoCentavos}
-            loading={loading}
-            estimated={!!r && r.comissaoEstimadaCentavos > 0}
-            comparison={cmp(prev?.comissaoCentavos)}
-            description="Fórmula ainda não definida para o Front"
+            value={trafego.current.data ? (mcBr ?? undefined) : undefined}
+            loading={trafego.current.isPending}
+            unavailableReason="RedTrack indisponível ou não configurado"
+            valueTone={mcBr != null && mcBr < 0 ? 'negative' : 'default'}
+            comparison={trafego.hasComparison ? { previous: trafego.comparison.data?.data.mcBrCentavos ?? undefined, loading: trafego.comparison.isPending } : undefined}
+            description="(Front + Upsell 1 + Downsell 1 + Downsell 2) × 0,70 − investimento × 1,10, do RedTrack (igual ao MC BR)"
           />
         </KpiGrid>
       </KpiGroup>

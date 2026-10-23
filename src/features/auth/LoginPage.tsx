@@ -16,7 +16,7 @@ import { loginSchema, type LoginForm } from './schemas';
 
 function loginErrorMessage(e: unknown): string {
   if (e instanceof ApiError) {
-    if (e.status === 401) return 'E-mail ou senha incorretos.';
+    if (e.status === 401) return 'Usuário/e-mail ou senha incorretos.';
     if (e.status === 429) return 'Muitas tentativas. Aguarde alguns minutos e tente novamente.';
     if (e.kind === 'network' || e.kind === 'timeout' || e.status === 503) return 'Não foi possível conectar ao servidor. Tente novamente.';
     if (e.status === 422) return 'Verifique os dados informados.';
@@ -48,7 +48,7 @@ export default function LoginPage() {
 
   const {
     register, handleSubmit, formState: { errors, isSubmitting },
-  } = useForm<LoginForm>({ resolver: zodResolver(loginSchema), defaultValues: { email: '', senha: '' } });
+  } = useForm<LoginForm>({ resolver: zodResolver(loginSchema), defaultValues: { login: '', senha: '' } });
 
   if (status === 'authenticated' && user) {
     return <Navigate to={user.trocaSenhaObrigatoria ? '/trocar-senha' : next} replace />;
@@ -57,7 +57,7 @@ export default function LoginPage() {
   const onSubmit = handleSubmit(async (values) => {
     setServerError(null);
     try {
-      const u = await login(values.email, values.senha);
+      const u = await login(values.login, values.senha);
       navigate(u.trocaSenhaObrigatoria ? '/trocar-senha' : next, { replace: true });
     } catch (e) {
       setServerError(loginErrorMessage(e));
@@ -85,19 +85,19 @@ export default function LoginPage() {
 
       <form onSubmit={onSubmit} noValidate className="space-y-4">
         <div className="space-y-1.5">
-          <Label htmlFor="email">E-mail</Label>
+          <Label htmlFor="login">E-mail ou usuário</Label>
           <Input
-            id="email"
-            type="email"
+            id="login"
+            type="text"
             inputMode="email"
             autoComplete="username"
             autoCapitalize="none"
             autoFocus={autoFocusEmail}
-            aria-invalid={!!errors.email}
-            aria-describedby={errors.email ? 'email-erro' : undefined}
-            {...register('email')}
+            aria-invalid={!!errors.login}
+            aria-describedby={errors.login ? 'login-erro' : undefined}
+            {...register('login')}
           />
-          {errors.email && <p id="email-erro" role="alert" className="text-xs text-negative">{errors.email.message}</p>}
+          {errors.login && <p id="login-erro" role="alert" className="text-xs text-negative">{errors.login.message}</p>}
         </div>
 
         <div className="space-y-1.5">

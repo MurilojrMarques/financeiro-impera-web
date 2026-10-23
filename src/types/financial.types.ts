@@ -438,7 +438,7 @@ export interface AuditoriaItem {
   detalhes: unknown;
   ip: string | null;
   criadoEm: string;
-  usuario: { id: string; nome: string; email: string } | null;
+  usuario: { id: string; nome: string; email: string | null } | null;
 }
 
 export interface RegraCusto {

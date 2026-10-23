@@ -73,7 +73,7 @@ export function DashboardHeader() {
             <DropdownMenuContent align="end" className="w-64">
               <DropdownMenuLabel className="space-y-0.5">
                 <span className="block text-sm font-medium text-foreground">{user?.nome}</span>
-                <span className="block truncate">{user?.email}</span>
+                <span className="block truncate">{user?.email ?? user?.usuario}</span>
                 <span className="block text-[11px]">Perfil: {user?.perfil}</span>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />

@@ -25,7 +25,8 @@ import type { Perfil, UsuarioAdmin } from '@/types/auth.types';
 const PERFIS: Perfil[] = ['ADMIN', 'FINANCEIRO', 'ANALISTA', 'LEITURA'];
 const schema = z.object({
   nome: z.string().trim().min(2, 'Informe o nome').max(120),
-  email: z.string().trim().min(1, 'Informe o e-mail').email('E-mail inválido'),
+  email: z.string().trim().email('E-mail inválido').or(z.literal('')),
+  usuario: z.string().trim().toLowerCase().regex(/^[a-z0-9][a-z0-9._-]{2,31}$/, 'Use 3 a 32 caracteres: letras, números, ponto, hífen ou sublinhado').or(z.literal('')),
   perfil: z.enum(['ADMIN', 'FINANCEIRO', 'ANALISTA', 'LEITURA']),
   /** só quando o servidor não tem e-mail configurado (sem convite): a troca é obrigatória no primeiro acesso */
   senhaTemporaria: z.string().optional(),
@@ -41,11 +42,14 @@ export function UsersPanel() {
   const comEmail = config.data?.recuperacaoSenha ?? true;
   const q = usePagedReport('usuarios', 'lista', adminService.usuarios, { page: state.page, limit: state.limit, busca: state.busca || undefined }, { autoRefresh: false });
 
-  const { register, handleSubmit, control, reset, formState: { errors } } = useForm<Form>({ resolver: zodResolver(schema), defaultValues: { nome: '', email: '', perfil: 'LEITURA', senhaTemporaria: '' } });
+  const { register, handleSubmit, control, reset, watch, formState: { errors } } = useForm<Form>({ resolver: zodResolver(schema), defaultValues: { nome: '', email: '', usuario: '', perfil: 'LEITURA', senhaTemporaria: '' } });
+  const emailPreenchido = !!watch('email')?.trim();
+  // sem e-mail (ou sem envio de e-mail no servidor) não há convite: a senha inicial é informada aqui e a troca é obrigatória no primeiro acesso
+  const precisaSenha = !comEmail || !emailPreenchido;
   const criar = useMutation({
-    mutationFn: (v: Form) => adminService.criarUsuario({ nome: v.nome, email: v.email, perfil: v.perfil, ...(!comEmail && v.senhaTemporaria ? { senhaTemporaria: v.senhaTemporaria } : {}) }),
+    mutationFn: (v: Form) => adminService.criarUsuario({ nome: v.nome, perfil: v.perfil, ...(v.email ? { email: v.email } : {}), ...(v.usuario ? { usuario: v.usuario } : {}), ...(precisaSenha && v.senhaTemporaria ? { senhaTemporaria: v.senhaTemporaria } : {}) }),
     onSuccess: (r) => {
-      toast.success(!r.data.conviteEnviado && !comEmail ? 'Usuário criado com senha temporária: a troca é obrigatória no primeiro acesso.' : r.data.conviteEnviado ? `Convite enviado para ${r.data.email}. O usuário define a própria senha pelo link.` : 'Usuário criado, mas o e-mail do convite não pôde ser enviado. Use "Reenviar convite".');
+      toast.success(!r.data.conviteEnviado && precisaSenha ? 'Usuário criado com senha temporária: a troca é obrigatória no primeiro acesso.' : r.data.conviteEnviado ? `Convite enviado para ${r.data.email}. O usuário define a própria senha pelo link.` : 'Usuário criado, mas o e-mail do convite não pôde ser enviado. Use "Reenviar convite".');
       setNovo(false);
       reset();
       void qc.invalidateQueries({ queryKey: ['usuarios'] });
@@ -74,7 +78,8 @@ export function UsersPanel() {
 
   const cols: Column<UsuarioAdmin>[] = [
     { id: 'nome', header: 'Nome', mobile: 'title', cell: (u) => <span className="font-medium">{u.nome}</span> },
-    { id: 'email', header: 'E-mail', mobile: 'full', cell: (u) => u.email },
+    { id: 'usuario', header: 'Usuário', mobile: 'full', cell: (u) => u.usuario ?? '—' },
+    { id: 'email', header: 'E-mail', mobile: 'full', cell: (u) => u.email ?? '—' },
     {
       id: 'perfil', header: 'Perfil',
       cell: (u) => (
@@ -133,18 +138,19 @@ export function UsersPanel() {
 
       <Dialog open={novo} onOpenChange={setNovo}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Novo usuário</DialogTitle><DialogDescription>{comEmail ? 'O usuário recebe um convite por e-mail e define a própria senha: você nunca vê nem informa a senha dele. O link vale por 72 horas.' : 'O envio de e-mail não está configurado no servidor: a conta é criada com uma senha temporária e a troca é obrigatória no primeiro acesso.'}</DialogDescription></DialogHeader>
-          <form onSubmit={handleSubmit((v) => { if (!comEmail && !(v.senhaTemporaria && v.senhaTemporaria.length >= 12 && /[A-Za-z]/.test(v.senhaTemporaria) && /\d/.test(v.senhaTemporaria))) { toast.error('Informe uma senha temporária com 12+ caracteres, letras e números.'); return; } criar.mutate(v); })} noValidate className="space-y-3">
+          <DialogHeader><DialogTitle>Novo usuário</DialogTitle><DialogDescription>Informe o usuário, o e-mail ou os dois: a pessoa poderá entrar com qualquer um. {precisaSenha ? 'Sem e-mail (ou com o envio de e-mail desligado) a conta é criada com uma senha inicial e a troca é obrigatória no primeiro acesso.' : 'Com e-mail, o usuário recebe um convite e define a própria senha: você nunca vê nem informa a senha dele. O link vale por 72 horas.'}</DialogDescription></DialogHeader>
+          <form onSubmit={handleSubmit((v) => { if (!v.email && !v.usuario) { toast.error('Informe o e-mail ou o usuário.'); return; } if (precisaSenha && !(v.senhaTemporaria && v.senhaTemporaria.length >= 12 && /[A-Za-z]/.test(v.senhaTemporaria) && /\d/.test(v.senhaTemporaria))) { toast.error('Informe uma senha temporária com 12+ caracteres, letras e números.'); return; } criar.mutate(v); })} noValidate className="space-y-3">
             <div className="space-y-1"><Label htmlFor="u-nome">Nome</Label><Input id="u-nome" aria-invalid={!!errors.nome} {...register('nome')} />{errors.nome && <p role="alert" className="text-xs text-negative">{errors.nome.message}</p>}</div>
-            <div className="space-y-1"><Label htmlFor="u-email">E-mail</Label><Input id="u-email" type="email" autoComplete="off" aria-invalid={!!errors.email} {...register('email')} />{errors.email && <p role="alert" className="text-xs text-negative">{errors.email.message}</p>}</div>
+            <div className="space-y-1"><Label htmlFor="u-usuario">Usuário (opcional)</Label><Input id="u-usuario" autoComplete="off" autoCapitalize="none" placeholder="ex.: murilo" aria-invalid={!!errors.usuario} {...register('usuario')} />{errors.usuario && <p role="alert" className="text-xs text-negative">{errors.usuario.message}</p>}</div>
+            <div className="space-y-1"><Label htmlFor="u-email">E-mail (opcional)</Label><Input id="u-email" type="email" autoComplete="off" aria-invalid={!!errors.email} {...register('email')} />{errors.email && <p role="alert" className="text-xs text-negative">{errors.email.message}</p>}</div>
             <div className="space-y-1">
               <Label htmlFor="u-perfil">Perfil</Label>
               <Controller control={control} name="perfil" render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}><SelectTrigger id="u-perfil"><SelectValue /></SelectTrigger><SelectContent>{PERFIS.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select>
               )} />
             </div>
-            {!comEmail && <div className="space-y-1"><Label htmlFor="u-senha">Senha temporária</Label><Input id="u-senha" type="password" autoComplete="new-password" {...register('senhaTemporaria')} /></div>}
-            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><Button variant="secondary" onClick={() => setNovo(false)}>Cancelar</Button><Button type="submit" disabled={criar.isPending}>{criar.isPending && <LoaderCircle className="animate-spin" />} {comEmail ? 'Enviar convite' : 'Criar usuário'}</Button></div>
+            {precisaSenha && <div className="space-y-1"><Label htmlFor="u-senha">Senha inicial</Label><Input id="u-senha" type="password" autoComplete="new-password" {...register('senhaTemporaria')} /></div>}
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><Button variant="secondary" onClick={() => setNovo(false)}>Cancelar</Button><Button type="submit" disabled={criar.isPending}>{criar.isPending && <LoaderCircle className="animate-spin" />} {precisaSenha ? 'Criar usuário' : 'Enviar convite'}</Button></div>
           </form>
         </DialogContent>
       </Dialog>

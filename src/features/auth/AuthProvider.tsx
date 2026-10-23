@@ -40,8 +40,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [queryClient],
   );
 
-  const login = useCallback(async (email: string, senha: string) => {
-    const payload = await authService.login(email, senha);
+  const login = useCallback(async (credencial: string, senha: string) => {
+    const payload = await authService.login(credencial, senha);
     setSessionExpired(false);
     setUser(payload.usuario);
     setStatus('authenticated');

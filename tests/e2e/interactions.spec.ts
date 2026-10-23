@@ -221,7 +221,7 @@ test.describe('celular (390×844)', () => {
   test('campos de texto usam 16px (sem zoom automático do iPhone)', async ({ page }) => {
     await installMockApi(page, { unauthenticated: true });
     await page.goto('/login');
-    const size = await page.getByLabel('E-mail').evaluate((el) => getComputedStyle(el).fontSize);
+    const size = await page.getByLabel('E-mail ou usuário').evaluate((el) => getComputedStyle(el).fontSize);
     expect(size).toBe('16px');
   });
 });
