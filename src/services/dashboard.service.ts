@@ -12,6 +12,12 @@ type DashboardKpisLike = Omit<DashboardKpis, 'custos'>;
 
 export interface DashboardTrafego {
   investimentoCentavos: number | null;
+  /** Front = MC BR (RedTrack); null sem RedTrack */
+  comissaoFrontCentavos: number | null;
+  /** Call Center = 20% do vendido */
+  comissaoCallCenterCentavos: number;
+  /** Front + Call Center (Backend Outros, Recuperação e Afiliado ainda sem comissão); null sem RedTrack */
+  comissaoTotalCentavos: number | null;
   receitaTotalCentavos: number;
   /** ROAS total × 100 (210 = 2,10): receita total de todos os grupos ÷ investimento; null sem investimento */
   roasTotalCentesimos: number | null;

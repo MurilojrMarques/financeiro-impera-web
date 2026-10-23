@@ -38,12 +38,11 @@ export function KpiSection({ trafego, kpis, previous, loading, hasComparison, co
           <KpiCard label="Ticket médio" value={kpis?.ticketMedioCentavos} loading={loading} comparison={cmp(previous?.ticketMedioCentavos)} />
           <KpiCard
             label="Comissão"
-            emImplementacao
-            value={kpis?.comissaoCentavos}
-            loading={loading}
-            estimated={!!kpis && kpis.comissaoEstimadaCentavos > 0}
-            comparison={cmp(previous?.comissaoCentavos)}
-            description={'Só o Call Center tem fórmula (20% do vendido); veja em Call Center'}
+            emImplementacao={!trafego}
+            value={trafego ? (trafego.data ? (trafego.data.comissaoTotalCentavos ?? undefined) : undefined) : undefined}
+            loading={trafego ? trafego.loading : loading}
+            unavailableReason="RedTrack indisponível: a comissão do Front depende dele"
+            description={trafego?.data ? `Front (MC BR) ${formatCurrency(trafego.data.comissaoFrontCentavos ?? 0)} + Call Center (20%) ${formatCurrency(trafego.data.comissaoCallCenterCentavos)}. Backend, Recuperação e Afiliados: sem comissão por enquanto` : 'Disponível para ANALISTA ou acima'}
           />
         </KpiGrid>
       </KpiGroup>
