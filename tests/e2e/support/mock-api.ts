@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
-import type { Perfil } from '@/types/auth.types';
+import type { Perfil, RhPapel } from '@/types/auth.types';
+import { handleRh } from './mock-rh';
 import type {
   Alerta, AfiliadoItem, Custo, DimRow, MetricasFormatadas, SerieRow, VendaItem,
 } from '@/types/financial.types';
@@ -11,6 +12,9 @@ import type { TrafegoParametros, TrafegoResumo } from '@/types/trafego.types';
  */
 export interface MockOptions {
   perfil?: Perfil;
+  /** papel no RH do usuário logado (padrão: nenhum) e o colaborador a que ele pertence */
+  rhPapel?: RhPapel;
+  colaboradorId?: string;
   /** dados desatualizados (aviso âmbar), como no ambiente real */
   stale?: boolean;
   /** multiplica os valores monetários (estresse de largura: "R$ 21.131.993,20") */
@@ -281,13 +285,16 @@ function handle(method: string, path: string, p: Params, o: MockOptions): Reply 
   const { de, ate } = range(p);
   const ticket = 36_200;
 
+  // ── RH
+  if (path.startsWith('/rh/')) return handleRh(path, o.rhPapel ?? 'COLABORADOR', o.colaboradorId ?? 'c-ana');
+
   // ── autenticação
   if (path === '/auth/refresh' || path === '/auth/login') {
     if (o.unauthenticated && path === '/auth/refresh') return { status: 401, data: null };
     return {
       data: {
         accessToken: 'mock-token', tokenType: 'Bearer', expiresIn: 900,
-        usuario: { id: 'u1', nome: 'Murilo Marques', email: 'murilo.marques@docato.com.br', perfil: o.perfil ?? 'ADMIN', trocaSenhaObrigatoria: false },
+        usuario: { id: 'u1', nome: 'Murilo Marques', email: 'murilo.marques@docato.com.br', perfil: o.perfil ?? 'ADMIN', rhPapel: o.rhPapel ?? null, colaboradorId: o.colaboradorId ?? null, trocaSenhaObrigatoria: false },
       },
     };
   }

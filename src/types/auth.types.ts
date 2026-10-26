@@ -1,4 +1,8 @@
-export type Perfil = 'ADMIN' | 'FINANCEIRO' | 'ANALISTA' | 'LEITURA';
+/** SEM_FINANCEIRO: colaborador comum, sem nenhuma tela do financeiro (só o módulo de RH). */
+export type Perfil = 'ADMIN' | 'FINANCEIRO' | 'ANALISTA' | 'LEITURA' | 'SEM_FINANCEIRO';
+
+/** Papel no módulo de RH, independente do perfil financeiro (uma pessoa pode ser FINANCEIRO e RH ao mesmo tempo). */
+export type RhPapel = 'RH' | 'CEO' | 'GESTOR' | 'COLABORADOR';
 
 export interface Usuario {
   id: string;
@@ -6,6 +10,9 @@ export interface Usuario {
   email: string | null;
   usuario: string | null;
   perfil: Perfil;
+  rhPapel: RhPapel | null;
+  /** cadastro de RH ao qual este login pertence */
+  colaboradorId: string | null;
   trocaSenhaObrigatoria: boolean;
 }
 

@@ -251,6 +251,14 @@ export async function apiUpload<T>(path: string, field: string, file: File, sign
   return run<T>(() => http.post(path, form, { signal, headers: { 'Content-Type': 'multipart/form-data' } }));
 }
 
+/** Upload com campos extras (multipart): `campos` vão como texto junto do arquivo. */
+export async function apiUploadForm<T>(path: string, field: string, file: File, campos: Record<string, string | number | undefined> = {}, signal?: AbortSignal): Promise<Result<T>> {
+  const form = new FormData();
+  for (const [k, v] of Object.entries(campos)) if (v !== undefined && v !== '') form.append(k, String(v));
+  form.append(field, file); // o arquivo por último: os campos já estão disponíveis quando o servidor lê o arquivo
+  return run<T>(() => http.post(path, form, { signal, headers: { 'Content-Type': 'multipart/form-data' } }));
+}
+
 export async function apiDownload(path: string): Promise<Blob> {
   try {
     const res = await http.get(path, { responseType: 'blob' });

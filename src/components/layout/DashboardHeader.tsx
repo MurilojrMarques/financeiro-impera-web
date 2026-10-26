@@ -10,6 +10,7 @@ import { useFilters } from '@/hooks/useFilters';
 import { formatRange } from '@/lib/dates';
 import { cn } from '@/lib/utils';
 import { BrandMark } from './BrandMark';
+import { ModuleSwitch } from './ModuleSwitch';
 
 const initials = (nome: string | undefined) =>
   (nome ?? '?').split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]!.toUpperCase()).join('');
@@ -47,6 +48,7 @@ export function DashboardHeader() {
         <SyncStatus className="col-start-2 row-start-2 md:col-start-3 md:row-start-1" />
 
         <div className="col-start-3 row-span-2 row-start-1 flex items-center gap-1.5 md:col-start-4 md:row-span-1 md:gap-2">
+          <ModuleSwitch className="max-md:hidden" />
           <Button
             variant="secondary"
             size="sm"
