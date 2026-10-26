@@ -18,6 +18,8 @@ export interface DashboardTrafego {
   comissaoCallCenterCentavos: number;
   /** Recuperação = (valor líquido × 0,70) × 5% */
   comissaoRecuperacaoCentavos: number;
+  /** o que os afiliados recebem (regra por afiliado) */
+  comissaoAfiliadosCentavos: number;
   /** Front + Call Center (Backend Outros, Recuperação e Afiliado ainda sem comissão); null sem RedTrack */
   comissaoTotalCentavos: number | null;
   receitaTotalCentavos: number;

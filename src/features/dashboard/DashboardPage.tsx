@@ -99,7 +99,7 @@ export default function DashboardPage() {
     { id: 'grupo', header: 'Grupo', mobile: 'title', cell: (r) => <span className="font-medium">{r.nome}</span> },
     { id: 'pedidos', header: 'Pedidos', align: 'right', cell: (r) => formatInteger(r.m.pedidos) },
     { id: 'receita', header: 'Receita', align: 'right', mobile: 'value', cell: (r) => <CurrencyValue centavos={r.m.receitaCentavos} /> },
-    { id: 'comissao', header: 'Comissão', align: 'right', cell: (r) => (r.id === 'CALL_CENTER' || r.id === 'RECUPERACAO' ? <CurrencyValue centavos={r.m.comissaoCentavos} /> : r.id === 'FRONT' && trafego.data?.data.comissaoFrontCentavos != null ? <CurrencyValue centavos={trafego.data.data.comissaoFrontCentavos} /> : r.id === 'BACKEND_OUTROS' || r.id === 'AFILIADO' ? <span className="text-muted-foreground">—</span> : <EmImplementacao />) },
+    { id: 'comissao', header: 'Comissão', align: 'right', cell: (r) => (r.id === 'CALL_CENTER' || r.id === 'RECUPERACAO' ? <CurrencyValue centavos={r.m.comissaoCentavos} /> : r.id === 'FRONT' && trafego.data?.data.comissaoFrontCentavos != null ? <CurrencyValue centavos={trafego.data.data.comissaoFrontCentavos} /> : r.id === 'AFILIADO' ? <CurrencyValue centavos={r.m.comissaoAfiliadoCentavos} /> : r.id === 'BACKEND_OUTROS' ? <span className="text-muted-foreground">—</span> : <EmImplementacao />) },
     { id: 'ticket', header: 'Ticket médio', align: 'right', cell: (r) => <CurrencyValue centavos={r.m.ticketMedioCentavos} /> },
   ];
 

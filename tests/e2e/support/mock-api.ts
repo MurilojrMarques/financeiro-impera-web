@@ -363,7 +363,7 @@ function handle(method: string, path: string, p: Params, o: MockOptions): Reply 
       alertas: ALERTAS,
     } };
   }
-  if (path === '/dashboard/trafego') return { meta, data: { investimentoCentavos: 121_189_738, comissaoFrontCentavos: 14_094_088, comissaoCallCenterCentavos: 2_500_000, comissaoRecuperacaoCentavos: 300_000, comissaoTotalCentavos: 16_594_088, receitaTotalCentavos: 250_000_000, roasTotalCentesimos: 206, fonteInvestimento: 'REDTRACK', mensagem: null } };
+  if (path === '/dashboard/trafego') return { meta, data: { investimentoCentavos: 121_189_738, comissaoFrontCentavos: 14_094_088, comissaoCallCenterCentavos: 2_500_000, comissaoRecuperacaoCentavos: 300_000, comissaoAfiliadosCentavos: 2_000_000, comissaoTotalCentavos: 16_594_088, receitaTotalCentavos: 250_000_000, roasTotalCentesimos: 206, fonteInvestimento: 'REDTRACK', mensagem: null } };
   if (path === '/dashboard/evolucao' || path === '/vendas/por-dia') return { meta, data: serie(de, ate, ped(8380), ticket, 'dash') };
   if (path === '/dashboard/distribuicao-receitas') {
     const t = 262_787_728;
