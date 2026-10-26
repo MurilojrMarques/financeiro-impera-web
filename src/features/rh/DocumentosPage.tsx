@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useAuth } from '@/hooks/useAuth';
 import { usePermissions } from '@/hooks/usePermissions';
 import { retryPolicy, usePagedReport } from '@/hooks/useReport';
 import { useTableState } from '@/hooks/useTableState';
@@ -164,8 +165,11 @@ function ReprovarDialog({ doc, onClose }: { doc: RhDocumento | null; onClose: ()
 export function DocumentosLista({ colaboradorId, fixo }: { colaboradorId?: string; fixo?: boolean }) {
   const qc = useQueryClient();
   const { rhCan, rhPapel } = usePermissions();
+  const { user } = useAuth();
   const ehRh = rhCan('documentos.revisar');
   const verTodos = rhPapel === 'RH' || rhPapel === 'CEO';
+  // quem não é RH só envia a PRÓPRIA nota: precisa ter cadastro de colaborador
+  const podeEnviar = ehRh || !!user?.colaboradorId;
   const { state, update } = useTableState(fixo ? 'docf' : 'doc', { limit: 20 });
   const { sp, update: updateUrl } = useUrlSearchParams();
   const competencia = fixo ? '' : (sp.get('competencia') ?? '');
@@ -265,7 +269,7 @@ export function DocumentosLista({ colaboradorId, fixo }: { colaboradorId?: strin
             </Select>
           </div>
         ) : <span />}
-        <Button onClick={() => setEnviar(true)} className="max-sm:w-full"><Upload /> {ehRh ? 'Enviar documento' : 'Enviar nota fiscal'}</Button>
+        {podeEnviar && <Button onClick={() => setEnviar(true)} className="max-sm:w-full"><Upload /> {ehRh ? 'Enviar documento' : 'Enviar nota fiscal'}</Button>}
       </div>
       <DataTable
         caption="Documentos"

@@ -22,7 +22,8 @@ export function RhLayout() {
   const { rhArea } = usePermissions();
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const itens = RH_NAV_ITEMS.filter((i) => rhArea(i.area));
+  // "Meu perfil" só existe para quem tem cadastro de colaborador (o administrador pode não ter)
+  const itens = RH_NAV_ITEMS.filter((i) => rhArea(i.area) && (i.area !== 'meu-perfil' || !!user?.colaboradorId));
   const section = rhSectionFor(pathname);
 
   useEffect(() => {
@@ -54,7 +55,7 @@ export function RhLayout() {
               <DropdownMenuLabel className="space-y-0.5">
                 <span className="block text-sm font-medium text-foreground">{user?.nome}</span>
                 <span className="block truncate">{user?.email ?? user?.usuario}</span>
-                <span className="block text-[11px]">Papel no RH: {user?.rhPapel ? PAPEL[user.rhPapel] : '—'}</span>
+                <span className="block text-[11px]">{user?.perfil === 'ADMIN' && user.rhPapel === 'CEO' ? 'RH: administrador (consulta tudo; envia só a própria nota)' : `Papel no RH: ${user?.rhPapel ? PAPEL[user.rhPapel] : '—'}`}</span>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
