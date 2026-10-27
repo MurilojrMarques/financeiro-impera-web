@@ -6,7 +6,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://murilo.taila0dbd7.ts.net/api/:path*"
+      "destination": "https://hefesto-api.tail6e939b.ts.net:8443/api/:path*"
     },
     {
       "source": "/((?!assets/|api/|.*\\..*).*)",
