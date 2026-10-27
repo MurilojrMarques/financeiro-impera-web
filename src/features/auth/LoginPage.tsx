@@ -26,7 +26,7 @@ function loginErrorMessage(e: unknown): string {
 
 /** Destino pós-login: somente caminhos internos (evita open redirect). */
 export function safeNext(next: string | null): string {
-  return next && next.startsWith('/') && !next.startsWith('//') && !next.startsWith('/login') ? next : '/dashboard';
+  return next && next.startsWith('/') && !next.startsWith('//') && !next.startsWith('/login') ? next : '/';
 }
 
 export default function LoginPage() {

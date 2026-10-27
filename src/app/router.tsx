@@ -1,9 +1,11 @@
 import { lazy, type ComponentType } from 'react';
 import { createBrowserRouter, createMemoryRouter, Navigate, type RouteObject } from 'react-router-dom';
 import { RouteError } from '@/components/feedback/RouteError';
+import { RhLayout } from '@/components/layout/RhLayout';
+import { HomeRedirect, RequireRh } from '@/features/rh/RhRoutes';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedRoute, RequireArea } from '@/features/auth/ProtectedRoute';
-import type { Area } from '@/lib/permissions';
+import type { Area, RhArea } from '@/lib/permissions';
 
 // Code splitting por rota: cada página (e os gráficos) só é baixada quando acessada.
 const LoginPage = lazy(() => import('@/features/auth/LoginPage'));
@@ -25,6 +27,24 @@ const CampanhasPage = lazy(() => import('@/features/campanhas/CampanhasPage'));
 const IntegracoesPage = lazy(() => import('@/features/integracoes/IntegracoesPage'));
 const ConfiguracoesPage = lazy(() => import('@/features/configuracoes/ConfiguracoesPage'));
 const NotFoundPage = lazy(() => import('@/features/NotFoundPage'));
+const RhPainelPage = lazy(() => import('@/features/rh/PainelPage'));
+const RhColaboradoresPage = lazy(() => import('@/features/rh/ColaboradoresPage'));
+const RhColaboradorDetalhePage = lazy(() => import('@/features/rh/ColaboradorDetalhePage'));
+const RhMeuPerfilPage = lazy(() => import('@/features/rh/ColaboradorDetalhePage').then((m) => ({ default: m.MeuPerfilPage })));
+const RhFolhaPage = lazy(() => import('@/features/rh/FolhaPage'));
+const RhFolhaDetalhePage = lazy(() => import('@/features/rh/FolhaDetalhePage'));
+const RhDocumentosPage = lazy(() => import('@/features/rh/DocumentosPage'));
+const RhMonitoramentoPage = lazy(() => import('@/features/rh/MonitoramentoPage'));
+const RhContaPage = lazy(() => import('@/features/rh/ContaPage'));
+
+const rh = (path: string, area: RhArea, Page: ComponentType): RouteObject => ({
+  path,
+  element: (
+    <RequireRh area={area}>
+      <Page />
+    </RequireRh>
+  ),
+});
 
 const guarded = (path: string, area: Area, Page: ComponentType): RouteObject => ({
   path,
@@ -48,7 +68,7 @@ export const routes: RouteObject[] = [
       {
         element: <DashboardLayout />,
         children: [
-          { path: '/', element: <Navigate to="/dashboard" replace /> },
+          { path: '/', element: <HomeRedirect /> },
           guarded('/dashboard', 'dashboard', DashboardPage),
           guarded('/front', 'front', FrontPage),
           guarded('/backend', 'backend', BackendPage),
@@ -63,6 +83,23 @@ export const routes: RouteObject[] = [
           guarded('/campanhas', 'campanhas', CampanhasPage),
           guarded('/integracoes', 'integracoes', IntegracoesPage),
           guarded('/configuracoes', 'configuracoes', ConfiguracoesPage),
+          { path: '*', element: <NotFoundPage /> },
+        ],
+      },
+      {
+        path: '/rh',
+        element: <RhLayout />,
+        children: [
+          { index: true, element: <HomeRedirect modulo="rh" /> },
+          rh('painel', 'painel', RhPainelPage),
+          rh('colaboradores', 'colaboradores', RhColaboradoresPage),
+          rh('colaboradores/:id', 'colaboradores', RhColaboradorDetalhePage),
+          rh('meu-perfil', 'meu-perfil', RhMeuPerfilPage),
+          rh('folha', 'folha', RhFolhaPage),
+          rh('folha/:competencia', 'folha', RhFolhaDetalhePage),
+          rh('documentos', 'documentos', RhDocumentosPage),
+          rh('monitoramento', 'monitoramento', RhMonitoramentoPage),
+          rh('conta', 'conta', RhContaPage),
           { path: '*', element: <NotFoundPage /> },
         ],
       },
