@@ -142,6 +142,7 @@ function vendas(n: number, seed: string, opts: { loss?: boolean; groupe?: VendaI
       valorVendaCentavos: valor,
       jurosCentavos: 0,
       comissaoCentavos: Math.round(valor * 0.97),
+      liquidoReceberCentavos: Math.round(valor * 0.9),
       comissaoFonte: r() > 0.7 ? 'ESTIMADA' : 'PAGAH',
       comissaoAfiliadoCentavos: null,
       comissaoAfiliadoFonte: 'AUSENTE',
@@ -216,7 +217,10 @@ function trafego(): TrafegoResumo {
     investimentoCentavos: investimento,
     roasCentesimos: 167,
     cpaCentavos: 24_368,
+    roasRedtrackCentesimos: 171,
+    cpaRedtrackCentavos: 22_900,
     mcBrCentavos: 14_094_088,
+    comissaoCopy: { disponivel: true, comissaoCentavos: 704_704, aPagarCentavos: 820_000, estado: 'PROVISORIO', pessoas: 10 },
     linhas: [
       linha('investimento', 'Investimento em anúncios', '', 'Gasto em anúncios no período, todas as fontes (campanhas do RedTrack)', investimento),
       linha('cartao', 'Taxa de cartão', '10%', '10% sobre o faturamento de R$ 2.113.199,32', taxa),
@@ -370,7 +374,7 @@ function handle(method: string, path: string, p: Params, o: MockOptions): Reply 
       alertas: ALERTAS,
     } };
   }
-  if (path === '/dashboard/trafego') return { meta, data: { investimentoCentavos: 121_189_738, comissaoFrontCentavos: 14_094_088, comissaoCallCenterCentavos: 2_500_000, comissaoRecuperacaoCentavos: 300_000, comissaoAfiliadosCentavos: 2_000_000, comissaoTotalCentavos: 16_594_088, receitaTotalCentavos: 250_000_000, roasTotalCentesimos: 206, fonteInvestimento: 'REDTRACK', mensagem: null } };
+  if (path === '/dashboard/trafego') return { meta, data: { investimentoCentavos: 121_189_738, mcBrCentavos: 14_094_088, comissaoFrontCentavos: 704_704, comissaoFrontAPagarCentavos: 820_000, comissaoFrontEstado: 'PROVISORIO', comissaoFrontMensagem: null, comissaoCallCenterCentavos: 2_500_000, comissaoRecuperacaoCentavos: 300_000, comissaoAfiliadosCentavos: 2_000_000, comissaoTotalCentavos: 5_504_704, comissaoTotalSemFront: false, receitaTotalCentavos: 250_000_000, roasTotalCentesimos: 206, fonteInvestimento: 'REDTRACK', mensagem: null } };
   if (path === '/dashboard/evolucao' || path === '/vendas/por-dia') return { meta, data: serie(de, ate, ped(8380), ticket, 'dash') };
   if (path === '/dashboard/distribuicao-receitas') {
     const t = 262_787_728;
@@ -473,7 +477,7 @@ function handle(method: string, path: string, p: Params, o: MockOptions): Reply 
     return { meta, data: { vendasNoPeriodo: 8380, vendasComRedtrack: 6021, vendasSemRedtrack: 2359, coberturaPercentual: 71.85, conversoesSemVenda: 12, porSituacao: [{ situacao: 'approved', quantidade: 5990 }, { situacao: 'pending', quantidade: 31 }, { situacao: null, quantidade: 4 }], observacao: 'A cobertura mede quantas vendas têm conversão correspondente no RedTrack.' } };
   }
   if (path === '/redtrack/divergencias') {
-    return paged(E(Array.from({ length: 27 }, (_, i) => ({ pedido: String(2900000 + i * 13), tipo: i % 3 === 0 ? ('SEM_VENDA' as const) : ('PAYOUT_DIFERENTE_DA_COMISSAO' as const), payoutCentavos: 38_000 + i * 10, comissaoCentavos: i % 3 === 0 ? null : 38_500, situacao: 'approved' }))), p);
+    return paged(E(Array.from({ length: 27 }, (_, i) => ({ pedido: String(2900000 + i * 13), tipo: i % 3 === 0 ? ('SEM_VENDA' as const) : ('PAYOUT_DIFERENTE_DO_LIQUIDO' as const), payoutCentavos: 38_000 + i * 10, liquidoReceberCentavos: i % 3 === 0 ? null : 38_500, situacao: 'approved' }))), p);
   }
   if (path === '/redtrack/conversoes') {
     return paged(E(Array.from({ length: 60 }, (_, i) => ({ pedido: String(2800000 + i * 7), conversaoId: `cv${i}`, payoutCentavos: 38_000, situacao: 'approved', campanha: CAMPANHAS[i % CAMPANHAS.length]!, anuncio: ANUNCIOS[i % ANUNCIOS.length]!, vendaId: i % 5 ? `v${i}` : null, sincronizadoEm: minutesAgo(i * 9) }))), p);

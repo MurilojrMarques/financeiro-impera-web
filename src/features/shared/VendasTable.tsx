@@ -57,6 +57,7 @@ export function VendasTable({ id, domain, resource, fetcher, title, fixed, keys,
     ...(showAffiliate ? [{ id: 'afiliado', header: 'Afiliado', cell: (v: VendaItem) => v.afiliado?.nome ?? '—' }] : []),
     { id: 'valor', header: 'Valor', align: 'right', sortable: true, sortKey: 'valorVendaCentavos', cell: (v) => <CurrencyValue centavos={v.valorVendaCentavos} /> },
     ...(showLoss ? [{ id: 'perda', header: 'Perda', align: 'right' as const, cell: (v: VendaItem) => <CurrencyValue centavos={v.perdaCentavos} /> }] : []),
+    { id: 'liquido', header: 'Líquido a receber', align: 'right', cell: (v) => <CurrencyValue centavos={v.liquidoReceberCentavos} /> },
     {
       id: 'comissao', header: 'Comissão', align: 'right',
       cell: (v) => (
@@ -93,7 +94,7 @@ export function VendasTable({ id, domain, resource, fetcher, title, fixed, keys,
             Perda: <CurrencyValue centavos={v.perdaCentavos} className="text-foreground" /> ·
           </>
         )}
-        Comissão: {v.grupo === 'CALL_CENTER' || v.grupo === 'RECUPERACAO' ? <CurrencyValue centavos={v.comissaoCentavos} className="text-foreground" /> : <EmImplementacao />}
+        Líquido a receber: <CurrencyValue centavos={v.liquidoReceberCentavos} className="text-foreground" /> · Comissão: {v.grupo === 'CALL_CENTER' || v.grupo === 'RECUPERACAO' ? <CurrencyValue centavos={v.comissaoCentavos} className="text-foreground" /> : <EmImplementacao />}
       </p>
     </div>
   );

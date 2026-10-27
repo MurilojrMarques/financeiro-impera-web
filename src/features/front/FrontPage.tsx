@@ -16,6 +16,7 @@ import { Segmented } from '@/components/ui/segmented';
 import { useFilters } from '@/hooks/useFilters';
 import { useReport } from '@/hooks/useReport';
 import { dimLabel, formatInteger, formatPercentage } from '@/lib/formatters';
+import { formatCurrency } from '@/lib/currency';
 import { frontService } from '@/services/front.service';
 import { trafegoService } from '@/services/trafego.service';
 import { vendasService } from '@/services/vendas.service';
@@ -49,6 +50,7 @@ export default function FrontPage() {
   // comissão do Front = MC BR (RedTrack): mesma consulta do bloco de Tráfego (cache compartilhado)
   const trafego = useWithComparison('trafego', 'resumo', trafegoService.resumo, { keys: [] });
   const mcBr = trafego.current.data?.data.mcBrCentavos;
+  const comissaoCopy = trafego.current.data?.data.comissaoCopy;
   const evolucao = useReport('front', 'evolucao', frontService.evolucao, params);
   const porLoja = useReport('front', 'por-loja', frontService.porLoja, params);
   const lojaDown = useReport('front', 'por-loja#downsell', frontService.porLoja, { ...params, tipo: 'DOWNSELL' });
@@ -157,13 +159,22 @@ export default function FrontPage() {
           <KpiCard label="Pedidos" format="integer" value={r?.pedidos} loading={loading} comparison={cmp(prev?.pedidos)} />
           <KpiCard label="Ticket médio" value={r?.ticketMedioCentavos} loading={loading} comparison={cmp(prev?.ticketMedioCentavos)} />
           <KpiCard
-            label="Comissão"
+            label="MC BR"
             value={trafego.current.data ? (mcBr ?? undefined) : undefined}
             loading={trafego.current.isPending}
             unavailableReason="RedTrack indisponível ou não configurado"
             valueTone={mcBr != null && mcBr < 0 ? 'negative' : 'default'}
             comparison={trafego.hasComparison ? { previous: trafego.comparison.data?.data.mcBrCentavos ?? undefined, loading: trafego.comparison.isPending } : undefined}
-            description="(Front + Upsell 1 + Downsell 1 + Downsell 2) × 0,70 − investimento × 1,10, do RedTrack (igual ao MC BR)"
+            description="(Front + Upsell 1 + Downsell 1 + Downsell 2) × 0,70 − investimento × 1,10, do RedTrack. É a margem que sobra para a empresa, não a comissão"
+          />
+          <KpiCard
+            label="Comissão (Copy)"
+            value={comissaoCopy?.disponivel ? comissaoCopy.comissaoCentavos : undefined}
+            loading={trafego.current.isPending}
+            unavailableReason={comissaoCopy && !comissaoCopy.disponivel ? comissaoCopy.mensagem : 'Sistema de copy indisponível'}
+            estimated={comissaoCopy?.disponivel === true && comissaoCopy.estado === 'PROVISORIO'}
+            comparison={trafego.hasComparison ? { previous: (() => { const c = trafego.comparison.data?.data.comissaoCopy; return c?.disponivel ? c.comissaoCentavos : undefined; })(), loading: trafego.comparison.isPending } : undefined}
+            description={comissaoCopy?.disponivel ? `Do sistema de copy: 5% do MC BR de cada pessoa (${comissaoCopy.pessoas} pessoas), com os negativos. A pagar, sem negativos: ${formatCurrency(comissaoCopy.aPagarCentavos)}${comissaoCopy.estado === 'PROVISORIO' ? '. Provisório: custo dos últimos dias em revisão' : ''}` : 'Vem do sistema de copy: 5% do MC BR de cada pessoa'}
           />
         </KpiGrid>
       </KpiGroup>

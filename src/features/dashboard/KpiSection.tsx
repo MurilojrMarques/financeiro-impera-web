@@ -39,10 +39,12 @@ export function KpiSection({ trafego, kpis, previous, loading, hasComparison, co
           <KpiCard
             label="Comissão"
             emImplementacao={!trafego}
-            value={trafego ? (trafego.data ? (trafego.data.comissaoTotalCentavos ?? undefined) : undefined) : undefined}
+            value={trafego ? (trafego.data ? trafego.data.comissaoTotalCentavos : undefined) : undefined}
             loading={trafego ? trafego.loading : loading}
-            unavailableReason="RedTrack indisponível: a comissão do Front depende dele"
-            description={trafego?.data ? `Front (MC BR) ${formatCurrency(trafego.data.comissaoFrontCentavos ?? 0)} + Call Center (20%) ${formatCurrency(trafego.data.comissaoCallCenterCentavos)} + Recuperação ${formatCurrency(trafego.data.comissaoRecuperacaoCentavos)} + Afiliados ${formatCurrency(trafego.data.comissaoAfiliadosCentavos)}. Backend: sem comissão por enquanto` : 'Disponível para ANALISTA ou acima'}
+            unavailableReason="Não foi possível carregar as comissões"
+            estimated={trafego?.data?.comissaoFrontEstado === 'PROVISORIO'}
+            partial={trafego?.data?.comissaoTotalSemFront === true}
+            description={trafego?.data ? `Front (Copy, 5% do MC BR de cada pessoa) ${trafego.data.comissaoFrontCentavos === null ? 'indisponível: ' + (trafego.data.comissaoFrontMensagem ?? '') : formatCurrency(trafego.data.comissaoFrontCentavos) + (trafego.data.comissaoFrontEstado === 'PROVISORIO' ? ' (provisório)' : '')} + Call Center (20%) ${formatCurrency(trafego.data.comissaoCallCenterCentavos)} + Recuperação ${formatCurrency(trafego.data.comissaoRecuperacaoCentavos)} + Afiliados ${formatCurrency(trafego.data.comissaoAfiliadosCentavos)}. Backend: em implementação. O MC BR não é comissão` : 'Disponível para ANALISTA ou acima'}
           />
         </KpiGrid>
       </KpiGroup>
@@ -57,6 +59,14 @@ export function KpiSection({ trafego, kpis, previous, loading, hasComparison, co
               unavailableReason={trafego.data?.mensagem ?? 'RedTrack indisponível ou não configurado'}
               polarity="down-is-good"
               description="RedTrack (ofertas Pagah), o mesmo investimento do Front"
+            />
+            <KpiCard
+              label="MC BR"
+              value={trafego.data ? (trafego.data.mcBrCentavos ?? undefined) : undefined}
+              loading={trafego.loading}
+              unavailableReason="RedTrack indisponível ou não configurado"
+              valueTone={trafego.data?.mcBrCentavos != null && trafego.data.mcBrCentavos < 0 ? 'negative' : 'default'}
+              description="Margem que sobra para a empresa (não é comissão); é a base da comissão do Copy"
             />
             <KpiCard
               label="ROAS total da operação"

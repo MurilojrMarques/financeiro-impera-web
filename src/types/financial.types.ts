@@ -110,6 +110,8 @@ export interface VendaItem {
   valorVendaCentavos: number;
   jurosCentavos: number | null;
   comissaoCentavos: number | null;
+  /** líquido que a Impera recebe da Pagah (coluna da planilha); null = não veio da planilha */
+  liquidoReceberCentavos: number | null;
   comissaoFonte: FonteComissao;
   comissaoAfiliadoCentavos: number | null;
   comissaoAfiliadoFonte: FonteComissao;
@@ -279,9 +281,10 @@ export interface RedtrackConciliacao {
 
 export interface RedtrackDivergencia {
   pedido: string;
-  tipo: 'SEM_VENDA' | 'PAYOUT_DIFERENTE_DA_COMISSAO';
+  tipo: 'SEM_VENDA' | 'PAYOUT_DIFERENTE_DO_LIQUIDO';
   payoutCentavos: number | null;
-  comissaoCentavos: number | null;
+  /** líquido a receber da Pagah (coluna "comissão" da planilha) */
+  liquidoReceberCentavos: number | null;
   situacao: string | null;
 }
 
@@ -365,6 +368,10 @@ export interface IntegracaoStatus {
   sincronizacaoAutomatica?: {
     ativa: boolean;
     intervaloMinutos: number;
+    /** leitura frequente da Pagah (EVENTOS) */
+    eventosIntervaloSegundos?: number;
+    eventosUltimaEm?: string | null;
+    eventosUltimoResultado?: 'SUCESSO' | 'ERRO' | 'OCUPADO' | null;
     proximaEm: string | null;
     ultimaTentativaEm: string | null;
     ultimoResultado: 'SUCESSO' | 'ERRO' | 'OCUPADO' | null;

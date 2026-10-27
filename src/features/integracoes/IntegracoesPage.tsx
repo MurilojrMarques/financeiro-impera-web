@@ -156,11 +156,11 @@ export default function IntegracoesPage() {
             <Card className="flex flex-col justify-between p-4">
               <h3 className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Sincronização automática</h3>
               <p className="mt-2 text-lg font-semibold">
-                {auto?.ativa ? `A cada ${auto.intervaloMinutos >= 60 && auto.intervaloMinutos % 60 === 0 ? `${auto.intervaloMinutos / 60} h` : `${auto.intervaloMinutos} min`}` : s ? 'Desligada' : '—'}
+                {auto?.ativa ? `Pagah a cada ${auto.eventosIntervaloSegundos ? (auto.eventosIntervaloSegundos % 60 === 0 ? `${auto.eventosIntervaloSegundos / 60} min` : `${auto.eventosIntervaloSegundos} s`) : `${auto.intervaloMinutos} min`}` : s ? 'Desligada' : '—'}
               </p>
               <p className="mt-1 text-[11px] text-muted-foreground">
                 {auto?.ativa
-                  ? `${auto.proximaEm ? `Próxima por volta de ${formatDateTime(auto.proximaEm)}. ` : ''}${auto.ultimoResultado === 'ERRO' ? 'A última tentativa falhou. ' : ''}Use “Sincronizar agora” para atualizar antes.`
+                  ? `RedTrack e conferência completa a cada ${auto.intervaloMinutos >= 60 && auto.intervaloMinutos % 60 === 0 ? `${auto.intervaloMinutos / 60} h` : `${auto.intervaloMinutos} min`}${auto.proximaEm ? ` (próxima por volta de ${formatDateTime(auto.proximaEm)})` : ''}. ${auto.eventosUltimoResultado === 'ERRO' || auto.ultimoResultado === 'ERRO' ? 'A última tentativa falhou. ' : ''}Use “Sincronizar agora” para atualizar antes.`
                   : 'Os dados só são atualizados quando um administrador sincroniza manualmente.'}
               </p>
             </Card>

@@ -14,11 +14,20 @@ export interface TrafegoResumo {
   pedidos: number;
   ticketMedioCentavos: number | null;
   investimentoCentavos: number | null;
-  /** ROAS × 100 (185 = 1,85) */
+  /** ROAS da Pagah × 100 (185 = 1,85): faturamento Pagah ÷ investimento */
   roasCentesimos: number | null;
+  /** CPA da Pagah: investimento ÷ pedidos Pagah */
   cpaCentavos: number | null;
+  /** ROAS do RedTrack × 100 (o que o tráfego usa para validar oferta e criativo): receita Front do RedTrack ÷ custo */
+  roasRedtrackCentesimos: number | null;
+  /** CPA do RedTrack: custo ÷ compras do RedTrack */
+  cpaRedtrackCentavos: number | null;
   /** MC BR do RedTrack: faturamento Front × 70% − investimento × 110% (base da comissão do pessoal); null sem RedTrack */
   mcBrCentavos: number | null;
+  /** comissão do Front = a do sistema de copy (5% do MC BR de cada pessoa) */
+  comissaoCopy:
+    | { disponivel: true; comissaoCentavos: number; aPagarCentavos: number; estado: 'FECHADO' | 'PROVISORIO'; pessoas: number }
+    | { disponivel: false; motivo: string; mensagem: string };
   linhas: LinhaCusto[];
   totalCustosCentavos: number | null;
   totalCustosSemInvestimentoCentavos: number;

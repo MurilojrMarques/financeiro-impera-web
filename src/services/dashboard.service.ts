@@ -12,16 +12,24 @@ type DashboardKpisLike = Omit<DashboardKpis, 'custos'>;
 
 export interface DashboardTrafego {
   investimentoCentavos: number | null;
-  /** Front = MC BR (RedTrack); null sem RedTrack */
+  /** MC BR (RedTrack): a margem que sobra para a empresa, NÃO é comissão; null sem RedTrack */
+  mcBrCentavos: number | null;
+  /** comissão do Front = a do sistema de copy (apuração: 5% do MC BR de cada pessoa, com negativos); null se indisponível */
   comissaoFrontCentavos: number | null;
+  /** o que se paga de fato (piso em 0 por pessoa) */
+  comissaoFrontAPagarCentavos: number | null;
+  comissaoFrontEstado: 'FECHADO' | 'PROVISORIO' | null;
+  comissaoFrontMensagem: string | null;
   /** Call Center = 20% do vendido */
   comissaoCallCenterCentavos: number;
   /** Recuperação = (valor líquido × 0,70) × 5% */
   comissaoRecuperacaoCentavos: number;
   /** o que os afiliados recebem (regra por afiliado) */
   comissaoAfiliadosCentavos: number;
-  /** Front + Call Center (Backend Outros, Recuperação e Afiliado ainda sem comissão); null sem RedTrack */
-  comissaoTotalCentavos: number | null;
+  /** Front (copy) + Call Center + Recuperação + Afiliados */
+  comissaoTotalCentavos: number;
+  /** true = a comissão do Front não entrou no total */
+  comissaoTotalSemFront: boolean;
   receitaTotalCentavos: number;
   /** ROAS total × 100 (210 = 2,10): receita total de todos os grupos ÷ investimento; null sem investimento */
   roasTotalCentesimos: number | null;

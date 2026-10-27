@@ -49,13 +49,13 @@ export default function CampanhasPage() {
 
   const colsDiv: Column<RedtrackDivergencia>[] = [
     { id: 'pedido', header: 'Pedido', mobile: 'title', cell: (x) => <span className="font-mono text-xs">{x.pedido}</span> },
-    { id: 'tipo', header: 'Situação', mobile: 'value', cell: (x) => (x.tipo === 'SEM_VENDA' ? <Badge variant="warning">Conversão sem venda</Badge> : <Badge variant="negative">Payout ≠ comissão</Badge>) },
-    { id: 'com', header: 'Comissão Pagah', align: 'right', cell: (x) => <CurrencyValue centavos={x.comissaoCentavos} /> },
+    { id: 'tipo', header: 'Situação', mobile: 'value', cell: (x) => (x.tipo === 'SEM_VENDA' ? <Badge variant="warning">Conversão sem venda</Badge> : <Badge variant="negative">Payout ≠ líquido</Badge>) },
+    { id: 'com', header: 'Líquido a receber (Pagah)', align: 'right', cell: (x) => <CurrencyValue centavos={x.liquidoReceberCentavos} /> },
     { id: 'pay', header: 'Payout RedTrack', align: 'right', cell: (x) => <CurrencyValue centavos={x.payoutCentavos} /> },
     {
       id: 'dif', header: 'Diferença', align: 'right',
       // diferença entre dois valores oficiais, só quando ambos existem
-      cell: (x) => (x.payoutCentavos !== null && x.comissaoCentavos !== null ? <CurrencyValue centavos={x.payoutCentavos - x.comissaoCentavos} showSign /> : '—'),
+      cell: (x) => (x.payoutCentavos !== null && x.liquidoReceberCentavos !== null ? <CurrencyValue centavos={x.payoutCentavos - x.liquidoReceberCentavos} showSign /> : '—'),
     },
     { id: 'sit', header: 'Situação no RedTrack', cell: (x) => x.situacao ?? '—' },
   ];
@@ -90,7 +90,7 @@ export default function CampanhasPage() {
         <KpiCard label="Divergências" format="integer" value={dm?.total} loading={divergencias.isPending} polarity="down-is-good" description={c ? `${formatInteger(c.conversoesSemVenda)} conversões sem venda` : undefined} />
       </KpiGrid>
 
-      {c?.observacao && <Notice tone="info">{c.observacao} O payout por campanha ainda não é entregue pelo backend (ver comparativo de comissão × payout em Divergências).</Notice>}
+      {c?.observacao && <Notice tone="info">{c.observacao} O payout por campanha ainda não é entregue pelo backend (ver comparativo de líquido a receber × payout em Divergências).</Notice>}
 
       <PageGrid cols={2}>
         <FinancialBarChart title="Receita por campanha" data={(campanhas.data?.data ?? []).filter((x) => x.receitaCentavos > 0).slice(0, 10).map((x) => ({ label: dimLabel(x.chave), value: x.receitaCentavos }))} loading={campanhas.isPending} error={campanhas.error} onRetry={() => void campanhas.refetch()} />
