@@ -75,13 +75,13 @@ export const temFinanceiro = (perfil: Perfil | undefined): boolean => !!perfil &
 
 /* ───────────── RH ───────────── */
 
-export type RhArea = 'painel' | 'colaboradores' | 'folha' | 'documentos' | 'monitoramento' | 'meu-perfil' | 'conta';
+export type RhArea = 'painel' | 'colaboradores' | 'folha' | 'comissoes' | 'documentos' | 'monitoramento' | 'meu-perfil' | 'conta';
 
 const RH_AREAS: Record<RhPapel, RhArea[]> = {
-  RH: ['painel', 'colaboradores', 'folha', 'documentos', 'monitoramento', 'meu-perfil', 'conta'],
-  CEO: ['painel', 'colaboradores', 'folha', 'documentos', 'monitoramento', 'meu-perfil', 'conta'],
-  GESTOR: ['colaboradores', 'documentos', 'meu-perfil', 'conta'],
-  COLABORADOR: ['documentos', 'meu-perfil', 'conta'],
+  RH: ['painel', 'colaboradores', 'folha', 'comissoes', 'documentos', 'monitoramento', 'meu-perfil', 'conta'],
+  CEO: ['painel', 'colaboradores', 'folha', 'comissoes', 'documentos', 'monitoramento', 'meu-perfil', 'conta'],
+  GESTOR: ['colaboradores', 'comissoes', 'documentos', 'meu-perfil', 'conta'],
+  COLABORADOR: ['documentos', 'comissoes', 'meu-perfil', 'conta'],
 };
 
 export type RhAction =
@@ -91,12 +91,15 @@ export type RhAction =
   | 'folha.editar'
   /** aprova/reprova documentos e envia comprovantes/contratos em nome de qualquer colaborador */
   | 'documentos.revisar'
+  /** vincula o copywriter ao colaborador e lança a comissão na folha */
+  | 'comissoes.lancar'
   | 'monitoramento.conferir';
 
 const RH_ACTIONS: Record<RhAction, RhPapel[]> = {
   'salario.ver': ['RH', 'CEO'],
   'folha.editar': ['RH'],
   'documentos.revisar': ['RH'],
+  'comissoes.lancar': ['RH'],
   'monitoramento.conferir': ['RH', 'CEO'],
 };
 

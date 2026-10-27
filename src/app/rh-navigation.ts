@@ -1,4 +1,4 @@
-import { Activity, BriefcaseBusiness, FileText, Gauge, Settings, UserRound, Users, type LucideIcon } from 'lucide-react';
+import { Activity, BriefcaseBusiness, Coins, FileText, Gauge, Settings, UserRound, Users, type LucideIcon } from 'lucide-react';
 import type { RhArea } from '@/lib/permissions';
 
 export interface RhNavItem {
@@ -15,6 +15,7 @@ export const RH_NAV_ITEMS: RhNavItem[] = [
   { to: '/rh/painel', label: 'Painel', section: 'RH — Painel da folha', area: 'painel', icon: Gauge },
   { to: '/rh/colaboradores', label: 'Colaboradores', section: 'RH — Colaboradores', area: 'colaboradores', icon: Users },
   { to: '/rh/folha', label: 'Folha', section: 'RH — Folha de pagamento', area: 'folha', icon: BriefcaseBusiness },
+  { to: '/rh/comissoes', label: 'Comissões', section: 'RH — Comissões por colaborador', area: 'comissoes', icon: Coins },
   { to: '/rh/documentos', label: 'Documentos', section: 'RH — Notas fiscais e comprovantes', area: 'documentos', icon: FileText },
   { to: '/rh/monitoramento', label: 'Monitoramento', section: 'RH — Monitoramento do sistema de RH', area: 'monitoramento', icon: Activity },
   { to: '/rh/meu-perfil', label: 'Meu perfil', section: 'RH — Meu perfil', area: 'meu-perfil', icon: UserRound },

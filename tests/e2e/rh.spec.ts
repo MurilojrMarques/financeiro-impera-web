@@ -36,6 +36,13 @@ test.describe('RH', () => {
     await expect(page.getByRole('button', { name: /Fechar folha/ })).toBeVisible();
     await shot(page, 'rh-folha');
 
+    await page.getByRole('link', { name: 'Comissões' }).click();
+    await expect(page.getByText('Comissão do Front').first()).toBeVisible();
+    await expect(page.getByText('Mês em aberto no sistema de copy').first()).toBeVisible();
+    await expect(page.getByText('REAPER').first()).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Lançar na folha' })).toBeDisabled(); // mês provisório
+    await shot(page, 'rh-comissoes');
+
     await page.getByRole('link', { name: 'Documentos' }).click();
     // abre na visão do mês: quem enviou a nota e quem falta
     await expect(page.getByText('Faltam enviar').first()).toBeVisible();

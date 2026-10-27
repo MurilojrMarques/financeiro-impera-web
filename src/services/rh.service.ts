@@ -1,8 +1,8 @@
 import type {
   RhAlteracao, RhColaborador, RhDocumento, RhDocumentoEnvio, RhEu, RhFolhaDetalhe, RhFolhaItem, RhFolhaItemEdicao, RhFolhaListada,
-  RhMonitoramento, RhMovimentacao, RhNotasResumo, RhPainel, RhResultadoSync, RhStatusDocumento,
+  RhComissoes, RhMonitoramento, RhMovimentacao, RhNotasResumo, RhPainel, RhResultadoSync, RhStatusDocumento,
 } from '@/types/rh.types';
-import { apiDownload, apiGet, apiPatch, apiPost, apiUploadForm } from './api.client';
+import { apiDownload, apiGet, apiPatch, apiPost, apiPut, apiUploadForm } from './api.client';
 import { pagedGetter } from './report.helpers';
 
 /**
@@ -32,6 +32,10 @@ export const rhService = {
   baixarDocumento: (id: string) => apiDownload(`/rh/documentos/${id}/arquivo`),
   revisarDocumento: (id: string, status: Exclude<RhStatusDocumento, 'ENVIADO'>, motivo?: string) =>
     apiPatch<{ id: string; status: RhStatusDocumento }>(`/rh/documentos/${id}/status`, { status, ...(motivo ? { motivo } : {}) }),
+
+  comissoes: (competencia: string, signal?: AbortSignal) => apiGet<RhComissoes>('/rh/comissoes', { params: { competencia }, signal }),
+  vincularComissao: (copywriterId: string, colaboradorId: string | null) => apiPut<{ copywriterId: string; colaboradorId: string | null }>('/rh/comissoes/vinculos', { copywriterId, colaboradorId }),
+  lancarComissoes: (competencia: string) => apiPost<{ competencia: string; pessoas: number; alterados: number; totalCentavos: number }>('/rh/comissoes/lancar', { competencia }),
 
   monitoramento: (signal?: AbortSignal) => apiGet<RhMonitoramento>('/rh/monitoramento', { signal }),
   alteracoes: pagedGetter<RhAlteracao>('/rh/alteracoes'),

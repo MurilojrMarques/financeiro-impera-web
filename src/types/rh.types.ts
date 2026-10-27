@@ -160,6 +160,28 @@ export interface RhNotasResumo {
   itens: RhNotasResumoItem[];
 }
 
+/** GET /rh/comissoes: comissão do Front por colaborador, lida do sistema de copy */
+export interface RhComissaoItem {
+  copywriterId: string;
+  copywriterNome: string;
+  colaborador: { id: string; nome: string } | null;
+  mcBrCentavos: number;
+  comissaoCentavos: number;
+  aPagarCentavos: number;
+  naFolhaCentavos: number | null;
+}
+export type RhComissoes =
+  | { competencia: string; folha: { status: 'ABERTA' | 'FECHADA' } | null; disponivel: false; motivo: string; mensagem: string; itens: []; sugestoes: Record<string, never>; totais: null }
+  | {
+      competencia: string;
+      folha: { status: 'ABERTA' | 'FECHADA' } | null;
+      disponivel: true;
+      estado: 'FECHADO' | 'PROVISORIO';
+      itens: RhComissaoItem[];
+      sugestoes: Record<string, { id: string; nome: string }[]>;
+      totais: { comissaoCentavos: number; aPagarCentavos: number; mcBrComissionavelCentavos: number; semVinculo: number } | null;
+    };
+
 export interface RhDocumentoEnvio {
   tipo: RhTipoDocumento;
   colaboradorId?: string;

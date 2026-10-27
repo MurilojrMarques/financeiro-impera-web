@@ -34,6 +34,7 @@ const RhColaboradorDetalhePage = lazy(() => import('@/features/rh/ColaboradorDet
 const RhMeuPerfilPage = lazy(() => import('@/features/rh/ColaboradorDetalhePage').then((m) => ({ default: m.MeuPerfilPage })));
 const RhFolhaPage = lazy(() => import('@/features/rh/FolhaPage'));
 const RhFolhaDetalhePage = lazy(() => import('@/features/rh/FolhaDetalhePage'));
+const RhComissoesPage = lazy(() => import('@/features/rh/ComissoesRhPage'));
 const RhDocumentosPage = lazy(() => import('@/features/rh/DocumentosPage'));
 const RhMonitoramentoPage = lazy(() => import('@/features/rh/MonitoramentoPage'));
 const RhContaPage = lazy(() => import('@/features/rh/ContaPage'));
@@ -99,6 +100,7 @@ export const routes: RouteObject[] = [
           rh('meu-perfil', 'meu-perfil', RhMeuPerfilPage),
           rh('folha', 'folha', RhFolhaPage),
           rh('folha/:competencia', 'folha', RhFolhaDetalhePage),
+          rh('comissoes', 'comissoes', RhComissoesPage),
           rh('documentos', 'documentos', RhDocumentosPage),
           rh('monitoramento', 'monitoramento', RhMonitoramentoPage),
           rh('conta', 'conta', RhContaPage),

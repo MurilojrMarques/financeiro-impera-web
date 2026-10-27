@@ -92,6 +92,14 @@ export function handleRh(path: string, papel: RhPapel, meuId: string): Reply | n
     return m[1] === '2026-10' ? { data: { competencia: '2026-10', status: 'ABERTA', fechadaEm: null, resumo: RESUMO, itens: FOLHA_ITENS } } : { status: 404, data: null };
   }
 
+  if (path === '/rh/comissoes') {
+    const todas = [
+      { copywriterId: 'cw-1', copywriterNome: 'ANA', colaborador: { id: PESSOAS[0]!.id, nome: PESSOAS[0]!.nome }, mcBrCentavos: 2_400_000, comissaoCentavos: 120_000, aPagarCentavos: 120_000, naFolhaCentavos: 0 },
+      { copywriterId: 'cw-2', copywriterNome: 'REAPER', colaborador: null, mcBrCentavos: -100_000, comissaoCentavos: -5_000, aPagarCentavos: 0, naFolhaCentavos: null },
+    ];
+    const itens = veTudo ? todas : todas.filter((i) => i.colaborador?.id === meuId);
+    return { data: { competencia: '2026-10', folha: { status: 'ABERTA' }, disponivel: true, estado: 'PROVISORIO', itens, sugestoes: {}, totais: veTudo ? { comissaoCentavos: 115_000, aPagarCentavos: 120_000, mcBrComissionavelCentavos: 2_300_000, semVinculo: 1 } : null } };
+  }
   if (path === '/rh/documentos/resumo') {
     if (!veTudo) return { status: 403, data: null };
     const nota = (id: string) => { const d = DOCS.find((x) => x.colaboradorId === id && x.tipo === 'NOTA_FISCAL'); return d ? { id: d.id, status: d.status, valorCentavos: d.valorCentavos, arquivoNome: d.arquivoNome, motivoReprovacao: d.motivoReprovacao, criadoEm: d.criadoEm } : null; };
