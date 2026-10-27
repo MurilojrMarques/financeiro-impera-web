@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 import { CurrencyValue } from '@/components/cards/CurrencyValue';
 import { FileUpload, validateFile } from '@/components/forms/FileUpload';
 import { MoneyInput } from '@/components/forms/MoneyInput';
+import { KpiCard } from '@/components/cards/KpiCard';
+import { KpiGrid } from '@/components/cards/KpiGrid';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DataTable, type Column } from '@/components/tables/DataTable';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Segmented } from '@/components/ui/segmented';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -21,7 +24,7 @@ import { useUrlSearchParams } from '@/hooks/useUrlSearchParams';
 import { formatBytes } from '@/lib/formatters';
 import { rhService } from '@/services/rh.service';
 import { ApiError } from '@/types/api.types';
-import type { RhDocumento, RhTipoDocumento } from '@/types/rh.types';
+import type { RhDocumento, RhNotasResumoItem, RhTipoDocumento } from '@/types/rh.types';
 import { baixar, dia, mesAtual, mesLabel, STATUS_DOC, TIPO_DOC } from './rh-format';
 
 const MAX_RH = 10 * 1024 * 1024;
@@ -175,6 +178,14 @@ export function DocumentosLista({ colaboradorId, fixo }: { colaboradorId?: strin
   const competencia = fixo ? '' : (sp.get('competencia') ?? '');
   const tipo = fixo ? '' : (sp.get('tipo') ?? '');
   const status = fixo ? '' : (sp.get('status') ?? '');
+  const colaboradorFiltro = fixo ? (colaboradorId ?? '') : (sp.get('colaborador') ?? '');
+  const pessoasFiltro = useQuery({
+    queryKey: ['rh', 'colaboradores-filtro'],
+    enabled: !fixo && verTodos,
+    staleTime: 5 * 60_000,
+    retry: retryPolicy,
+    queryFn: async ({ signal }) => (await rhService.colaboradores({ limit: 100 }, signal)).data,
+  });
   const [enviar, setEnviar] = useState(false);
   const [reprovar, setReprovar] = useState<RhDocumento | null>(null);
 
@@ -182,7 +193,7 @@ export function DocumentosLista({ colaboradorId, fixo }: { colaboradorId?: strin
     'rh',
     'documentos',
     rhService.documentos,
-    { page: state.page, limit: state.limit, colaboradorId: colaboradorId || undefined, competencia: competencia || undefined, tipo: tipo || undefined, status: status || undefined },
+    { page: state.page, limit: state.limit, colaboradorId: colaboradorFiltro || undefined, competencia: competencia || undefined, tipo: tipo || undefined, status: status || undefined },
     { autoRefresh: false },
   );
 
@@ -253,6 +264,15 @@ export function DocumentosLista({ colaboradorId, fixo }: { colaboradorId?: strin
         {!fixo ? (
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <Input type="month" aria-label="Mês de referência" value={competencia} onChange={(e) => setFiltro('competencia', e.target.value)} className="h-9 w-full sm:w-44" />
+            {verTodos && (
+              <Select value={colaboradorFiltro || TODOS} onValueChange={(v) => setFiltro('colaborador', v === TODOS ? '' : v)}>
+                <SelectTrigger className="h-9 w-full sm:w-60" aria-label="Colaborador"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={TODOS}>Todos os colaboradores</SelectItem>
+                  {(pessoasFiltro.data ?? []).map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
             <Select value={tipo || TODOS} onValueChange={(v) => setFiltro('tipo', v === TODOS ? '' : v)}>
               <SelectTrigger className="h-9 w-full sm:w-56" aria-label="Tipo"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -290,16 +310,121 @@ export function DocumentosLista({ colaboradorId, fixo }: { colaboradorId?: strin
   );
 }
 
+/** Visão do mês: quem já enviou a nota fiscal e quem falta, com valor, situação e comprovante. Só RH e CEO (o administrador entra como CEO). */
+function NotasDoMes() {
+  const qc = useQueryClient();
+  const { rhCan } = usePermissions();
+  const ehRh = rhCan('documentos.revisar');
+  const { sp, update } = useUrlSearchParams();
+  const mes = sp.get('mes') ?? mesAtual();
+  const q = useQuery({
+    queryKey: ['rh', 'documentos', 'resumo', mes],
+    retry: retryPolicy,
+    queryFn: async ({ signal }) => (await rhService.notasResumo(mes, signal)).data,
+  });
+  const baixarNota = useMutation({
+    mutationFn: async (i: RhNotasResumoItem) => baixar(await rhService.baixarDocumento(i.nota!.id), i.nota!.arquivoNome),
+    onError: () => toast.error('Não foi possível baixar o arquivo.'),
+  });
+  const aprovar = useMutation({
+    mutationFn: (i: RhNotasResumoItem) => rhService.revisarDocumento(i.nota!.id, 'APROVADO'),
+    onSuccess: () => {
+      toast.success('Nota aprovada.');
+      void qc.invalidateQueries({ queryKey: ['rh', 'documentos'] });
+    },
+    onError: () => toast.error('Não foi possível aprovar.'),
+  });
+  const d = q.data;
+  const cols: Column<RhNotasResumoItem>[] = [
+    { id: 'nome', header: 'Colaborador', mobile: 'title', sortable: true, sortValue: (i) => i.nome, cell: (i) => <span className="font-medium">{i.nome}</span> },
+    { id: 'depto', header: 'Área', cell: (i) => i.departamento ?? '—' },
+    {
+      id: 'sit',
+      header: 'Nota fiscal',
+      mobile: 'value',
+      sortable: true,
+      sortValue: (i) => (i.nota ? i.nota.status : 'FALTANDO'),
+      cell: (i) =>
+        i.nota ? (
+          <span className="flex flex-col items-start gap-1">
+            <Badge variant={STATUS_DOC[i.nota.status].variant}>{STATUS_DOC[i.nota.status].label}</Badge>
+            {i.nota.motivoReprovacao && <span className="max-w-48 text-xs text-negative">{i.nota.motivoReprovacao}</span>}
+          </span>
+        ) : (
+          <Badge variant="warning">Faltando</Badge>
+        ),
+    },
+    { id: 'valor', header: 'Valor', align: 'right', sortable: true, sortValue: (i) => i.nota?.valorCentavos ?? -1, cell: (i) => (i.nota?.valorCentavos == null ? '—' : <CurrencyValue centavos={i.nota.valorCentavos} />) },
+    { id: 'em', header: 'Enviada em', cell: (i) => (i.nota ? dia(i.nota.criadoEm) : '—') },
+    { id: 'comp', header: 'Comprovante', cell: (i) => (i.comprovante ? <Badge variant="positive">Enviado</Badge> : <span className="text-muted-foreground">—</span>) },
+    {
+      id: 'acoes',
+      header: 'Ações',
+      align: 'right',
+      mobile: 'actions',
+      cell: (i) =>
+        i.nota ? (
+          <span className="flex flex-wrap justify-end gap-1">
+            <Button variant="ghost" size="sm" disabled={baixarNota.isPending} onClick={() => baixarNota.mutate(i)}><Download /> Baixar</Button>
+            {ehRh && i.nota.status === 'ENVIADO' && <Button variant="ghost" size="sm" disabled={aprovar.isPending} onClick={() => aprovar.mutate(i)}><Check /> Aprovar</Button>}
+          </span>
+        ) : null,
+    },
+  ];
+  return (
+    <div className="space-y-4">
+      <Input
+        type="month"
+        aria-label="Mês de referência"
+        value={mes}
+        onChange={(e) => update((prev) => { const n = new URLSearchParams(prev); n.set('mes', e.target.value || mesAtual()); return n; })}
+        className="h-9 w-full sm:w-44"
+      />
+      <KpiGrid cols={4}>
+        <KpiCard label="Colaboradores no mês" format="integer" value={d?.totais.colaboradores} loading={q.isPending} />
+        <KpiCard label="Já enviaram" format="integer" value={d?.totais.comNota} loading={q.isPending} description={d ? `${d.totais.aprovadas} aprovadas · ${d.totais.aguardandoRevisao} aguardando revisão · ${d.totais.reprovadas} reprovadas` : undefined} />
+        <KpiCard label="Faltam enviar" format="integer" value={d?.totais.semNota} loading={q.isPending} polarity="down-is-good" />
+        <KpiCard label="Soma das notas" value={d?.totais.valorNotasCentavos} loading={q.isPending} description="Valor informado nas notas do mês" />
+      </KpiGrid>
+      <DataTable
+        caption={`Notas fiscais de ${mesLabel(mes)}`}
+        columns={cols}
+        data={d?.itens}
+        rowKey={(i) => i.colaboradorId}
+        loading={q.isPending}
+        fetching={q.isFetching && !q.isPending}
+        error={q.error}
+        onRetry={() => void q.refetch()}
+        dense
+        empty={{ title: 'Nenhum colaborador neste mês.' }}
+      />
+    </div>
+  );
+}
+
 export default function DocumentosPage() {
   const { rhCan, rhPapel } = usePermissions();
   const verTodos = rhPapel === 'RH' || rhPapel === 'CEO';
+  const { sp, update } = useUrlSearchParams();
+  // quem vê todos abre na visão do mês (quem enviou e quem falta); a lista completa fica na outra aba
+  const aba = verTodos && sp.get('visao') !== 'lista' ? 'mes' : 'lista';
   return (
     <>
       <PageHeader
         title={verTodos ? 'Notas fiscais e comprovantes' : 'Minhas notas fiscais e comprovantes'}
         description={rhCan('documentos.revisar') ? 'Revise as notas enviadas e anexe os comprovantes de pagamento.' : verTodos ? 'Notas fiscais e comprovantes de todos os colaboradores.' : 'Envie a sua nota fiscal todo mês e acompanhe aqui o comprovante de pagamento.'}
+        actions={
+          verTodos ? (
+            <Segmented
+              label="Visão das notas"
+              value={aba}
+              onChange={(v) => update((prev) => { const n = new URLSearchParams(prev); n.set('visao', v); return n; })}
+              options={[{ value: 'mes', label: 'Por mês' }, { value: 'lista', label: 'Lista completa' }]}
+            />
+          ) : undefined
+        }
       />
-      <DocumentosLista />
+      {aba === 'mes' ? <NotasDoMes /> : <DocumentosLista />}
     </>
   );
 }

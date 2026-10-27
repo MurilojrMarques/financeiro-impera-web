@@ -20,14 +20,20 @@ import { formatDateTime } from '@/lib/dates';
 import { adminService } from '@/services/admin.service';
 import { authConfig } from '@/services/auth.service';
 import { ApiError } from '@/types/api.types';
-import type { Perfil, UsuarioAdmin } from '@/types/auth.types';
+import { rhService } from '@/services/rh.service';
+import type { Perfil, RhPapel, UsuarioAdmin } from '@/types/auth.types';
 
-const PERFIS: Perfil[] = ['ADMIN', 'FINANCEIRO', 'ANALISTA', 'LEITURA'];
+/** SEM_FINANCEIRO = colaborador: entra só no módulo de RH, sem nenhuma tela do financeiro. */
+const PERFIS: Perfil[] = ['ADMIN', 'FINANCEIRO', 'ANALISTA', 'LEITURA', 'SEM_FINANCEIRO'];
+const PERFIL_LABEL: Record<Perfil, string> = { ADMIN: 'ADMIN', FINANCEIRO: 'FINANCEIRO', ANALISTA: 'ANALISTA', LEITURA: 'LEITURA', SEM_FINANCEIRO: 'COLABORADOR (só RH)' };
+const RH_PAPEIS: RhPapel[] = ['RH', 'CEO', 'GESTOR', 'COLABORADOR'];
+const RH_LABEL: Record<RhPapel, string> = { RH: 'RH', CEO: 'CEO', GESTOR: 'Gestor', COLABORADOR: 'Colaborador' };
+const SEM_RH = '__sem_rh__';
 const schema = z.object({
   nome: z.string().trim().min(2, 'Informe o nome').max(120),
   email: z.string().trim().email('E-mail inválido').or(z.literal('')),
   usuario: z.string().trim().toLowerCase().regex(/^[a-z0-9][a-z0-9._-]{2,31}$/, 'Use 3 a 32 caracteres: letras, números, ponto, hífen ou sublinhado').or(z.literal('')),
-  perfil: z.enum(['ADMIN', 'FINANCEIRO', 'ANALISTA', 'LEITURA']),
+  perfil: z.enum(['ADMIN', 'FINANCEIRO', 'ANALISTA', 'LEITURA', 'SEM_FINANCEIRO']),
   /** só quando o servidor não tem e-mail configurado (sem convite): a troca é obrigatória no primeiro acesso */
   senhaTemporaria: z.string().optional(),
 });
@@ -76,6 +82,20 @@ export function UsersPanel() {
     onError: (e) => toast.error(e instanceof ApiError && e.status === 409 ? e.message : 'Não foi possível alterar o perfil.'),
   });
 
+  const rh = useMutation({
+    mutationFn: (v: { id: string; rhPapel: RhPapel | null; colaboradorId?: string | null }) => adminService.atualizarRh(v.id, { rhPapel: v.rhPapel, ...(v.colaboradorId !== undefined ? { colaboradorId: v.colaboradorId } : {}) }),
+    onSuccess: () => { toast.success('Acesso ao RH atualizado.'); void qc.invalidateQueries({ queryKey: ['usuarios'] }); },
+    onError: (e) => toast.error(e instanceof ApiError && [404, 409].includes(e.status ?? 0) ? e.message : 'Não foi possível alterar o acesso ao RH.'),
+  });
+  // cadastros do sistema do RH, para ligar a um usuário que ainda não tem (só carrega se alguém precisar)
+  const colaboradores = useQuery({
+    queryKey: ['rh', 'colaboradores-para-vinculo'],
+    enabled: (q.data?.data ?? []).some((u) => u.rhPapel && !u.colaborador),
+    staleTime: 5 * 60_000,
+    retry: false,
+    queryFn: async ({ signal }) => (await rhService.colaboradores({ limit: 100 }, signal)).data,
+  });
+
   const cols: Column<UsuarioAdmin>[] = [
     { id: 'nome', header: 'Nome', mobile: 'title', cell: (u) => <span className="font-medium">{u.nome}</span> },
     { id: 'usuario', header: 'Usuário', mobile: 'full', cell: (u) => u.usuario ?? '—' },
@@ -85,9 +105,33 @@ export function UsersPanel() {
       cell: (u) => (
         <Select value={u.perfil} onValueChange={(p) => perfil.mutate({ id: u.id, perfil: p as Perfil })} disabled={u.id === eu?.id || perfil.isPending}>
           <SelectTrigger className="h-8 w-36 text-xs" aria-label={`Perfil de ${u.nome}`}><SelectValue /></SelectTrigger>
-          <SelectContent>{PERFIS.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+          <SelectContent>{PERFIS.map((p) => <SelectItem key={p} value={p}>{PERFIL_LABEL[p]}</SelectItem>)}</SelectContent>
         </Select>
       ),
+    },
+    {
+      id: 'rh', header: 'Papel no RH',
+      cell: (u) => (
+        <Select value={u.rhPapel ?? SEM_RH} onValueChange={(v) => rh.mutate({ id: u.id, rhPapel: v === SEM_RH ? null : (v as RhPapel) })} disabled={u.id === eu?.id || rh.isPending}>
+          <SelectTrigger className="h-8 w-36 text-xs" aria-label={`Papel no RH de ${u.nome}`}><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value={SEM_RH}>Sem acesso ao RH</SelectItem>
+            {RH_PAPEIS.map((p) => <SelectItem key={p} value={p}>{RH_LABEL[p]}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      ),
+    },
+    {
+      id: 'cadastro', header: 'Cadastro de colaborador', mobile: 'full',
+      cell: (u) =>
+        u.colaborador ? (
+          <span title="Cadastro vindo do sistema do RH; é ele que dá direito a enviar a própria nota fiscal">{u.colaborador.nome}</span>
+        ) : u.rhPapel ? (
+          <Select value="" onValueChange={(id) => rh.mutate({ id: u.id, rhPapel: u.rhPapel, colaboradorId: id })} disabled={rh.isPending}>
+            <SelectTrigger className="h-8 w-44 text-xs" aria-label={`Vincular cadastro a ${u.nome}`}><SelectValue placeholder="Vincular cadastro…" /></SelectTrigger>
+            <SelectContent>{(colaboradores.data ?? []).map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}</SelectContent>
+          </Select>
+        ) : '—',
     },
     { id: 'status', header: 'Status', mobile: 'value', cell: (u) => (u.ativo ? <Badge variant="positive">Ativo</Badge> : <Badge>Inativo</Badge>) },
     {
@@ -146,7 +190,7 @@ export function UsersPanel() {
             <div className="space-y-1">
               <Label htmlFor="u-perfil">Perfil</Label>
               <Controller control={control} name="perfil" render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}><SelectTrigger id="u-perfil"><SelectValue /></SelectTrigger><SelectContent>{PERFIS.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select>
+                <Select value={field.value} onValueChange={field.onChange}><SelectTrigger id="u-perfil"><SelectValue /></SelectTrigger><SelectContent>{PERFIS.map((p) => <SelectItem key={p} value={p}>{PERFIL_LABEL[p]}</SelectItem>)}</SelectContent></Select>
               )} />
             </div>
             {precisaSenha && <div className="space-y-1"><Label htmlFor="u-senha">Senha inicial</Label><Input id="u-senha" type="password" autoComplete="new-password" {...register('senhaTemporaria')} /></div>}

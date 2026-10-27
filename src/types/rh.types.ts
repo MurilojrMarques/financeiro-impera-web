@@ -144,6 +144,22 @@ export interface RhDocumento {
   colaborador: { nome: string };
 }
 
+/** GET /rh/documentos/resumo: situação da nota fiscal de cada colaborador no mês */
+export interface RhNotasResumoItem {
+  colaboradorId: string;
+  nome: string;
+  departamento: string | null;
+  funcao: string | null;
+  nota: { id: string; status: RhStatusDocumento; valorCentavos: number | null; arquivoNome: string; motivoReprovacao: string | null; criadoEm: string } | null;
+  quantidadeNotas: number;
+  comprovante: boolean;
+}
+export interface RhNotasResumo {
+  competencia: string;
+  totais: { colaboradores: number; comNota: number; semNota: number; aprovadas: number; aguardandoRevisao: number; reprovadas: number; valorNotasCentavos: number };
+  itens: RhNotasResumoItem[];
+}
+
 export interface RhDocumentoEnvio {
   tipo: RhTipoDocumento;
   colaboradorId?: string;

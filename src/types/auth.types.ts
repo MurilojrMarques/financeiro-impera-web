@@ -36,6 +36,10 @@ export interface Sessao {
 export interface UsuarioAdmin {
   id: string;
   nome: string;
+  /** papel no RH (independe do perfil do financeiro); null = fora do RH */
+  rhPapel: RhPapel | null;
+  colaboradorId: string | null;
+  colaborador: { nome: string } | null;
   email: string | null;
   usuario: string | null;
   perfil: Perfil;

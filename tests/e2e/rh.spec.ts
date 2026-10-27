@@ -37,8 +37,14 @@ test.describe('RH', () => {
     await shot(page, 'rh-folha');
 
     await page.getByRole('link', { name: 'Documentos' }).click();
-    await expect(page.getByText('NF-102-outubro.pdf').first()).toBeVisible();
+    // abre na visão do mês: quem enviou a nota e quem falta
+    await expect(page.getByText('Faltam enviar').first()).toBeVisible();
+    await expect(page.getByText('Faltando').first()).toBeVisible();
     await expect(page.getByRole('button', { name: /Aprovar/ }).first()).toBeVisible();
+    await shot(page, 'rh-notas-mes');
+    await page.getByRole('tab', { name: 'Lista completa' }).click();
+    await expect(page.getByText('NF-102-outubro.pdf').first()).toBeVisible();
+    await expect(page.getByRole('combobox', { name: 'Colaborador' })).toBeVisible();
     await shot(page, 'rh-documentos');
 
     await page.getByRole('link', { name: 'Monitoramento' }).click();

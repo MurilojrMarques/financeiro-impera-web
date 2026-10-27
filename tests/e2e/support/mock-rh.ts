@@ -92,6 +92,13 @@ export function handleRh(path: string, papel: RhPapel, meuId: string): Reply | n
     return m[1] === '2026-10' ? { data: { competencia: '2026-10', status: 'ABERTA', fechadaEm: null, resumo: RESUMO, itens: FOLHA_ITENS } } : { status: 404, data: null };
   }
 
+  if (path === '/rh/documentos/resumo') {
+    if (!veTudo) return { status: 403, data: null };
+    const nota = (id: string) => { const d = DOCS.find((x) => x.colaboradorId === id && x.tipo === 'NOTA_FISCAL'); return d ? { id: d.id, status: d.status, valorCentavos: d.valorCentavos, arquivoNome: d.arquivoNome, motivoReprovacao: d.motivoReprovacao, criadoEm: d.criadoEm } : null; };
+    const itens = PESSOAS.map((p) => ({ colaboradorId: p.id, nome: p.nome, departamento: p.departamento, funcao: p.funcao, nota: nota(p.id), quantidadeNotas: nota(p.id) ? 1 : 0, comprovante: DOCS.some((d) => d.colaboradorId === p.id && d.tipo === 'COMPROVANTE_PAGAMENTO') }));
+    const com = itens.filter((i) => i.nota);
+    return { data: { competencia: '2026-10', totais: { colaboradores: itens.length, comNota: com.length, semNota: itens.length - com.length, aprovadas: com.filter((i) => i.nota!.status === 'APROVADO').length, aguardandoRevisao: com.filter((i) => i.nota!.status === 'ENVIADO').length, reprovadas: com.filter((i) => i.nota!.status === 'REPROVADO').length, valorNotasCentavos: com.reduce((s, i) => s + (i.nota!.valorCentavos ?? 0), 0) }, itens } };
+  }
   if (path === '/rh/documentos') return pg(veTudo ? DOCS : DOCS.filter((d) => d.colaboradorId === meuId));
 
   if (path === '/rh/monitoramento') {

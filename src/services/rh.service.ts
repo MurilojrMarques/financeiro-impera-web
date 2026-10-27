@@ -1,6 +1,6 @@
 import type {
   RhAlteracao, RhColaborador, RhDocumento, RhDocumentoEnvio, RhEu, RhFolhaDetalhe, RhFolhaItem, RhFolhaItemEdicao, RhFolhaListada,
-  RhMonitoramento, RhMovimentacao, RhPainel, RhResultadoSync, RhStatusDocumento,
+  RhMonitoramento, RhMovimentacao, RhNotasResumo, RhPainel, RhResultadoSync, RhStatusDocumento,
 } from '@/types/rh.types';
 import { apiDownload, apiGet, apiPatch, apiPost, apiUploadForm } from './api.client';
 import { pagedGetter } from './report.helpers';
@@ -26,6 +26,7 @@ export const rhService = {
   fecharFolha: (competencia: string) => apiPost<{ competencia: string; status: string }>(`/rh/folha/${competencia}/fechar`),
 
   documentos: pagedGetter<RhDocumento>('/rh/documentos'),
+  notasResumo: (competencia: string, signal?: AbortSignal) => apiGet<RhNotasResumo>('/rh/documentos/resumo', { params: { competencia }, signal }),
   enviarDocumento: (arquivo: File, dados: RhDocumentoEnvio) =>
     apiUploadForm<RhDocumento>('/rh/documentos', 'arquivo', arquivo, { ...dados }),
   baixarDocumento: (id: string) => apiDownload(`/rh/documentos/${id}/arquivo`),
