@@ -16,6 +16,7 @@ export type Area =
   | 'campanhas'
   | 'trafego'
   | 'recuperacao'
+  | 'comissoes'
   | 'custos'
   | 'integracoes'
   | 'configuracoes';
@@ -30,6 +31,7 @@ const AREA_MIN: Record<Area, Perfil> = {
   campanhas: 'ANALISTA',
   trafego: 'ANALISTA',
   recuperacao: 'ANALISTA',
+  comissoes: 'ANALISTA',
   custos: 'FINANCEIRO',
   integracoes: 'LEITURA',
   configuracoes: 'LEITURA',

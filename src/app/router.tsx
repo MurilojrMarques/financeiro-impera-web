@@ -18,6 +18,7 @@ const FrontPage = lazy(() => import('@/features/front/FrontPage'));
 const BackendPage = lazy(() => import('@/features/backend/BackendPage'));
 const CallCenterPage = lazy(() => import('@/features/call-center/CallCenterPage'));
 const RecuperacaoPage = lazy(() => import('@/features/recuperacao/RecuperacaoPage'));
+const ComissoesPage = lazy(() => import('@/features/comissoes/ComissoesPage'));
 const AfiliadosPage = lazy(() => import('@/features/afiliados/AfiliadosPage'));
 const AfiliadoDetalhePage = lazy(() => import('@/features/afiliados/AfiliadoDetalhePage'));
 const CustosFixosPage = lazy(() => import('@/features/custos/CustosFixosPage'));
@@ -74,6 +75,7 @@ export const routes: RouteObject[] = [
           guarded('/backend', 'backend', BackendPage),
           guarded('/call-center', 'call-center', CallCenterPage),
           guarded('/recuperacao', 'recuperacao', RecuperacaoPage),
+          guarded('/comissoes', 'comissoes', ComissoesPage),
           guarded('/afiliados', 'afiliados', AfiliadosPage),
           guarded('/afiliados/:id', 'afiliados', AfiliadoDetalhePage),
           guarded('/custos', 'custos', () => <Navigate to="/custos/fixos" replace />),

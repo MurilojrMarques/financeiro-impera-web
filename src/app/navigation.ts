@@ -1,5 +1,5 @@
 import {
-  Headset, Layers, LayoutDashboard, Megaphone, PlugZap, ReceiptText, RefreshCcw, Settings, Store, Undo2, Users, Wallet, type LucideIcon,
+  Coins, Headset, Layers, LayoutDashboard, Megaphone, PlugZap, ReceiptText, RefreshCcw, Settings, Store, Undo2, Users, Wallet, type LucideIcon,
 } from 'lucide-react';
 import type { Area } from '@/lib/permissions';
 
@@ -21,6 +21,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/backend', label: 'Back-end', section: 'Back-end', area: 'backend', icon: Layers },
   { to: '/call-center', label: 'Call Center', section: 'Call Center — Resultados', area: 'call-center', icon: Headset },
   { to: '/recuperacao', label: 'Recuperação', section: 'Recuperação de vendas', area: 'recuperacao', icon: RefreshCcw },
+  { to: '/comissoes', label: 'Comissões', section: 'Comissões', area: 'comissoes', icon: Coins },
   { to: '/afiliados', label: 'Afiliados', section: 'Afiliados', area: 'afiliados', icon: Users },
   { to: '/custos/fixos', label: 'Custos Fixos', section: 'Custos Fixos', area: 'custos', icon: Wallet },
   { to: '/custos/call-center', label: 'Lançamentos', section: 'Call Center — Lançamentos', area: 'custos', icon: ReceiptText },

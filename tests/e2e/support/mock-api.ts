@@ -374,6 +374,27 @@ function handle(method: string, path: string, p: Params, o: MockOptions): Reply 
       alertas: ALERTAS,
     } };
   }
+  if (path === '/comissoes/resumo') {
+    return {
+      meta,
+      data: {
+        front: {
+          disponivel: true, estado: 'PROVISORIO', comissaoCentavos: 443_197, aPagarCentavos: 582_336, mcBrComissionavelCentavos: 8_863_940, mcBrSemComissaoCentavos: 924_118, quantidadePessoas: 3,
+          pessoas: [
+            { copywriterId: 'a', nome: 'YAN', mcBrCentavos: 7_900_140, comissaoCentavos: 395_007, aPagarCentavos: 395_007 },
+            { copywriterId: 'b', nome: 'CAROL', mcBrCentavos: 1_813_880, comissaoCentavos: 90_694, aPagarCentavos: 90_694 },
+            { copywriterId: 'c', nome: 'CRISPIM', mcBrCentavos: -845_020, comissaoCentavos: -42_251, aPagarCentavos: 0 },
+          ],
+        },
+        callCenter: { regra: '20% do líquido (valor sem juros − estornos e chargebacks)', baseCentavos: 12_500_000, comissaoCentavos: 2_500_000 },
+        recuperacao: { regra: '(líquido × 0,70) × 5%', baseCentavos: 8_500_000, comissaoCentavos: 297_500 },
+        afiliados: { regra: 'o que os afiliados recebem (regra por afiliado)', comissaoCentavos: 2_000_000 },
+        backendOutros: { emImplementacao: true, mensagem: 'A regra da comissão do Backend Outros ainda não foi definida.' },
+        totalCentavos: 5_240_697,
+        totalSemFront: false,
+      },
+    };
+  }
   if (path === '/dashboard/trafego') return { meta, data: { investimentoCentavos: 121_189_738, mcBrCentavos: 14_094_088, comissaoFrontCentavos: 704_704, comissaoFrontAPagarCentavos: 820_000, comissaoFrontEstado: 'PROVISORIO', comissaoFrontMensagem: null, comissaoCallCenterCentavos: 2_500_000, comissaoRecuperacaoCentavos: 300_000, comissaoAfiliadosCentavos: 2_000_000, comissaoTotalCentavos: 5_504_704, comissaoTotalSemFront: false, receitaTotalCentavos: 250_000_000, roasTotalCentesimos: 206, fonteInvestimento: 'REDTRACK', mensagem: null } };
   if (path === '/dashboard/evolucao' || path === '/vendas/por-dia') return { meta, data: serie(de, ate, ped(8380), ticket, 'dash') };
   if (path === '/dashboard/distribuicao-receitas') {
