@@ -44,7 +44,7 @@ export function KpiSection({ trafego, kpis, previous, loading, hasComparison, co
             unavailableReason="Não foi possível carregar as comissões"
             estimated={trafego?.data?.comissaoFrontEstado === 'PROVISORIO'}
             partial={trafego?.data?.comissaoTotalSemFront === true}
-            description={trafego?.data ? `Front (Copy, 5% do MC BR de cada pessoa) ${trafego.data.comissaoFrontCentavos === null ? 'indisponível: ' + (trafego.data.comissaoFrontMensagem ?? '') : formatCurrency(trafego.data.comissaoFrontCentavos) + (trafego.data.comissaoFrontEstado === 'PROVISORIO' ? ' (provisório)' : '')} + Call Center (20%) ${formatCurrency(trafego.data.comissaoCallCenterCentavos)} + Recuperação ${formatCurrency(trafego.data.comissaoRecuperacaoCentavos)} + Afiliados ${formatCurrency(trafego.data.comissaoAfiliadosCentavos)}. Backend: em implementação. O MC BR não é comissão` : 'Disponível para ANALISTA ou acima'}
+            description={trafego?.data ? `Front (Copy, 5% do MC BR de cada pessoa) ${trafego.data.comissaoFrontCentavos === null ? 'indisponível: ' + (trafego.data.comissaoFrontMensagem ?? '') : formatCurrency(trafego.data.comissaoFrontCentavos) + (trafego.data.comissaoFrontEstado === 'PROVISORIO' ? ' (provisório)' : '')} + Call Center (20%) ${formatCurrency(trafego.data.comissaoCallCenterCentavos)} + Recuperação ${formatCurrency(trafego.data.comissaoRecuperacaoCentavos)} + Afiliados ${formatCurrency(trafego.data.comissaoAfiliadosCentavos)}. Backend: em implementação` : 'Disponível para ANALISTA ou acima'}
           />
         </KpiGrid>
       </KpiGroup>
