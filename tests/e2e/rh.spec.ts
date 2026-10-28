@@ -88,9 +88,16 @@ test.describe('RH', () => {
 
     await page.goto('/rh/folha');
     await expect(page.getByText(/permiss/i).first()).toBeVisible();
-    // o financeiro também é bloqueado
+    // o financeiro também é bloqueado: quem só tem RH é levado de volta ao RH
     await page.goto('/dashboard');
-    await expect(page.getByText(/permiss/i).first()).toBeVisible();
+    await expect(page).toHaveURL(/rh/);
+  });
+
+  test('colaborador que abre uma tela do financeiro (link antigo) vai para o RH, não para "acesso negado"', async ({ page }) => {
+    await installMockApi(page, { perfil: 'SEM_FINANCEIRO', rhPapel: 'COLABORADOR', colaboradorId: 'c-ana' });
+    await page.goto('/dashboard');
+    await expect(page).toHaveURL(/\/rh\/documentos/);
+    await expect(page.getByText('Acesso negado')).toHaveCount(0);
   });
 
   test('celular: abas rolam na horizontal e a tabela vira cartões @mobile', async ({ page }) => {

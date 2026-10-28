@@ -11,7 +11,7 @@ export default function ForcedPasswordChangePage() {
 
   if (status === 'loading') return null;
   if (status === 'unauthenticated' || !user) return <Navigate to="/login" replace />;
-  if (!user.trocaSenhaObrigatoria) return <Navigate to="/dashboard" replace />;
+  if (!user.trocaSenhaObrigatoria) return <Navigate to="/" replace />;
 
   return (
     <AuthShell>
@@ -19,7 +19,7 @@ export default function ForcedPasswordChangePage() {
       <ChangePasswordForm
         onDone={() => {
           markPasswordChanged();
-          navigate('/dashboard', { replace: true });
+          navigate('/', { replace: true }); // a raiz leva cada perfil à sua tela inicial (financeiro ou RH)
         }}
       />
       <Button
