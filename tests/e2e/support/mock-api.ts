@@ -217,6 +217,7 @@ function trafego(): TrafegoResumo {
     investimentoCentavos: investimento,
     roasCentesimos: 167,
     cpaCentavos: 24_368,
+    frontRevenueRedtrackCentavos: 3_055_000_00,
     roasRedtrackCentesimos: 171,
     cpaRedtrackCentavos: 22_900,
     mcBrCentavos: 14_094_088,

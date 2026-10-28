@@ -18,6 +18,8 @@ export interface TrafegoResumo {
   roasCentesimos: number | null;
   /** CPA da Pagah: investimento ÷ pedidos Pagah */
   cpaCentavos: number | null;
+  /** Front Revenue do RedTrack (Front + Upsell + Downsells, direto da plataforma); null sem RedTrack */
+  frontRevenueRedtrackCentavos: number | null;
   /** ROAS do RedTrack × 100 (o que o tráfego usa para validar oferta e criativo): receita Front do RedTrack ÷ custo */
   roasRedtrackCentesimos: number | null;
   /** CPA do RedTrack: custo ÷ compras do RedTrack */
