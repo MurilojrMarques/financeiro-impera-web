@@ -51,6 +51,7 @@ export default function FrontPage() {
   const trafego = useWithComparison('trafego', 'resumo', trafegoService.resumo, { keys: [] });
   const mcBr = trafego.current.data?.data.mcBrCentavos;
   const comissaoCopy = trafego.current.data?.data.comissaoCopy;
+  const frontRevenueRedtrack = trafego.current.data?.data.frontRevenueRedtrackCentavos;
   const evolucao = useReport('front', 'evolucao', frontService.evolucao, params);
   const porLoja = useReport('front', 'por-loja', frontService.porLoja, params);
   const lojaDown = useReport('front', 'por-loja#downsell', frontService.porLoja, { ...params, tipo: 'DOWNSELL' });
@@ -136,8 +137,16 @@ export default function FrontPage() {
       <TrafegoSection />
 
       <KpiGroup title="Receita do Front">
-        <KpiGrid cols={6}>
+        <KpiGrid cols={7}>
           <KpiCard label="Faturamento Front (Pagah)" value={r?.brutoCentavos} loading={loading} highlight hero comparison={cmp(prev?.brutoCentavos)} description="Pagamentos do período (compra + upsell + downsell), sem descontar estornos" />
+          <KpiCard
+            label="Front Revenue (RedTrack)"
+            value={frontRevenueRedtrack ?? undefined}
+            loading={trafego.current.isPending}
+            unavailableReason="RedTrack indisponível ou não configurado"
+            comparison={trafego.hasComparison ? { previous: trafego.comparison.data?.data.frontRevenueRedtrackCentavos ?? undefined, loading: trafego.comparison.isPending } : undefined}
+            description="Direto do RedTrack: Front + Upsell + Downsells (só vendas atribuídas à campanha)"
+          />
           <KpiCard label="Receita líquida Front" value={r?.receitaCentavos} loading={loading} comparison={cmp(prev?.receitaCentavos)} description="Faturamento menos estornos e chargebacks do critério ativo" />
           <KpiCard label="Compras iniciais" value={r?.porTipo.compras.receitaCentavos} loading={loading} comparison={cmp(prev?.porTipo.compras.receitaCentavos)} description={r ? `${formatInteger(r.porTipo.compras.pedidos)} pedidos` : undefined} />
           <KpiCard label="Upsells" value={r?.porTipo.upsells.receitaCentavos} loading={loading} comparison={cmp(prev?.porTipo.upsells.receitaCentavos)} description={r ? `${formatInteger(r.porTipo.upsells.pedidos)} pedidos` : undefined} />
