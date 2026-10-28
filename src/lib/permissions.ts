@@ -80,7 +80,7 @@ export type RhArea = 'painel' | 'colaboradores' | 'folha' | 'comissoes' | 'docum
 const RH_AREAS: Record<RhPapel, RhArea[]> = {
   RH: ['painel', 'colaboradores', 'folha', 'comissoes', 'documentos', 'monitoramento', 'meu-perfil', 'conta'],
   CEO: ['painel', 'colaboradores', 'folha', 'comissoes', 'documentos', 'monitoramento', 'meu-perfil', 'conta'],
-  GESTOR: ['colaboradores', 'comissoes', 'documentos', 'meu-perfil', 'conta'],
+  GESTOR: ['documentos', 'comissoes', 'meu-perfil', 'conta'],
   COLABORADOR: ['documentos', 'meu-perfil', 'conta'],
 };
 

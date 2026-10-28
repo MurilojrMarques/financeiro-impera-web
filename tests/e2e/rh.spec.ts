@@ -60,12 +60,12 @@ test.describe('RH', () => {
     await shot(page, 'rh-monitoramento');
   });
 
-  test('gestor: só a equipe, sem salário, sem folha nem monitoramento', async ({ page }) => {
+  test('gestor: só documentos, comissões e meu perfil; sem lista de colaboradores, folha nem monitoramento', async ({ page }) => {
     await installMockApi(page, { perfil: 'SEM_FINANCEIRO', rhPapel: 'GESTOR', colaboradorId: 'c-gestora' });
     await page.goto('/');
-    await expect(page).toHaveURL(/\/rh\/colaboradores/);
-    await expect(page.getByText('Minha equipe').first()).toBeVisible();
-    await expect(page.getByRole('columnheader', { name: 'Salário' })).toHaveCount(0);
+    await expect(page).toHaveURL(/\/rh\/documentos/);
+    await expect(page.getByRole('link', { name: 'Colaboradores' })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'Meu perfil' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Folha', exact: true })).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Monitoramento' })).toHaveCount(0);
     await expect(page.getByRole('navigation', { name: 'Módulo' })).toHaveCount(0); // sem financeiro: não há o que alternar
