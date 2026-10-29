@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Lock, LoaderCircle, Pencil, RefreshCw } from 'lucide-react';
+import { ArrowLeft, HandCoins, Lock, LoaderCircle, Pencil, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -23,6 +23,7 @@ import { retryPolicy } from '@/hooks/useReport';
 import { rhService } from '@/services/rh.service';
 import { ApiError } from '@/types/api.types';
 import type { RhFolhaItem } from '@/types/rh.types';
+import { ImperaCredDialog } from './ImperaCredDialog';
 import { dia, mesLabel } from './rh-format';
 
 function EditarItem({ item, competencia, fechada, onClose }: { item: RhFolhaItem | null; competencia: string; fechada: boolean; onClose: () => void }) {
@@ -95,6 +96,7 @@ export default function FolhaDetalhePage() {
   const editar = rhCan('folha.editar');
   const [item, setItem] = useState<RhFolhaItem | null>(null);
   const [fechar, setFechar] = useState(false);
+  const [imperaCredAberto, setImperaCredAberto] = useState(false);
   const valida = !!competencia && /^\d{4}-\d{2}$/.test(competencia);
 
   const q = useQuery({
@@ -145,6 +147,7 @@ export default function FolhaDetalhePage() {
     { id: 'com', header: 'Comissão', align: 'right', cell: (i) => <CurrencyValue centavos={i.comissaoCentavos} /> },
     { id: 'bon', header: 'Bônus', align: 'right', cell: (i) => <CurrencyValue centavos={i.bonusCentavos} /> },
     { id: 'des', header: 'Desconto', align: 'right', cell: (i) => <CurrencyValue centavos={i.descontoCentavos} /> },
+    { id: 'imp', header: 'ImperaCred', align: 'right', cell: (i) => (i.imperaCredCentavos > 0 ? <span title="Adiantamento do mês anterior, descontado nesta folha"><CurrencyValue centavos={i.imperaCredCentavos} /></span> : <span className="text-muted-foreground">—</span>) },
     { id: 'total', header: 'Total', align: 'right', mobile: 'value', cell: (i) => <strong className="font-semibold"><CurrencyValue centavos={i.totalCentavos} /></strong> },
     { id: 'status', header: 'Pagamento', cell: (i) => (i.status === 'PAGO' ? <Badge variant="positive" title={i.pagoEm ? `Pago em ${dia(i.pagoEm)}` : undefined}>Pago</Badge> : <Badge variant="warning">Pendente</Badge>) },
     ...(editar
@@ -167,12 +170,11 @@ export default function FolhaDetalhePage() {
         title={`Folha de ${mesLabel(competencia)}`}
         description={fechada ? `Fechada${f?.fechadaEm ? ` em ${dia(f.fechadaEm)}` : ''}. Só o pagamento pode ser registrado.` : 'Aberta: acompanha mudanças de salário vindas do sistema de RH.'}
         actions={
-          editar && f ? (
-            <>
-              {!fechada && <Button variant="secondary" disabled={gerar.isPending} onClick={() => gerar.mutate(true)}><RefreshCw className={gerar.isPending ? 'animate-spin' : undefined} /> Atualizar folha</Button>}
-              {!fechada && <Button onClick={() => setFechar(true)}><Lock /> Fechar folha</Button>}
-            </>
-          ) : undefined
+          <>
+            <Button variant="outline" onClick={() => setImperaCredAberto(true)}><HandCoins /> ImperaCred</Button>
+            {editar && f && !fechada && <Button variant="secondary" disabled={gerar.isPending} onClick={() => gerar.mutate(true)}><RefreshCw className={gerar.isPending ? 'animate-spin' : undefined} /> Atualizar folha</Button>}
+            {editar && f && !fechada && <Button onClick={() => setFechar(true)}><Lock /> Fechar folha</Button>}
+          </>
         }
       />
 
@@ -187,7 +189,7 @@ export default function FolhaDetalhePage() {
       ) : (
         <>
           <KpiGrid cols={4}>
-            <KpiCard label="Total da folha" hero highlight value={f?.resumo.totalCentavos} loading={q.isPending} description="Salários + comissões + bônus − descontos" />
+            <KpiCard label="Total da folha" hero highlight value={f?.resumo.totalCentavos} loading={q.isPending} description="Salários + comissões + bônus − descontos − ImperaCred" />
             <KpiCard label="Salários do mês" value={f?.resumo.salariosCentavos} loading={q.isPending} description={f && f.resumo.salariosMensaisCentavos !== f.resumo.salariosCentavos ? 'Já com o proporcional de quem entrou ou saiu' : undefined} />
             <KpiCard label="Pago" value={f?.resumo.pagoCentavos} loading={q.isPending} valueTone="positive" />
             <KpiCard label="A pagar" value={f?.resumo.pendenteCentavos} loading={q.isPending} />
@@ -196,6 +198,7 @@ export default function FolhaDetalhePage() {
         </>
       )}
 
+      <ImperaCredDialog open={imperaCredAberto} onOpenChange={setImperaCredAberto} competencia={competencia} podeEditar={editar} />
       <EditarItem item={item} competencia={competencia} fechada={fechada} onClose={() => setItem(null)} />
       <ConfirmDialog
         open={fechar}

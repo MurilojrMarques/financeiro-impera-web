@@ -16,6 +16,7 @@ import { rhService } from '@/services/rh.service';
 import type { RhColaborador, RhMovimentacao } from '@/types/rh.types';
 import { Avatar } from './Avatar';
 import { DocumentosLista } from './DocumentosPage';
+import { PixCampo } from './Pix';
 import { dia, senioridadeLabel } from './rh-format';
 
 function Campo({ rotulo, children }: { rotulo: string; children: ReactNode }) {
@@ -88,6 +89,7 @@ export function Ficha({ id, meuPerfil }: { id: string; meuPerfil?: boolean }) {
         <ContentSection title="Dados pessoais e fiscais" description="Visível apenas para RH, CEO e para a própria pessoa.">
           <dl className="grid gap-4 rounded-lg border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-3">
             <Campo rotulo="CNPJ">{c.cnpj}</Campo>
+            <Campo rotulo="Chave PIX"><PixCampo colaboradorId={c.id} pix={c.pix} podeEditar={rhCan('pix.editar')} /></Campo>
             <Campo rotulo="Nascimento">{dia(c.nascimento)}</Campo>
             <Campo rotulo="Endereço">{c.endereco}</Campo>
             {c.demissao && <Campo rotulo="Motivo do desligamento">{c.motivoDemissao === 'voluntario' ? 'Voluntário' : c.motivoDemissao === 'involuntario' ? 'Involuntário' : c.motivoDemissao}</Campo>}

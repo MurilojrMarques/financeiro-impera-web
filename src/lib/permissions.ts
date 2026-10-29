@@ -80,7 +80,7 @@ export type RhArea = 'painel' | 'colaboradores' | 'folha' | 'comissoes' | 'docum
 const RH_AREAS: Record<RhPapel, RhArea[]> = {
   RH: ['painel', 'colaboradores', 'folha', 'comissoes', 'documentos', 'monitoramento', 'meu-perfil', 'conta'],
   CEO: ['painel', 'colaboradores', 'folha', 'comissoes', 'documentos', 'monitoramento', 'meu-perfil', 'conta'],
-  GESTOR: ['documentos', 'comissoes', 'meu-perfil', 'conta'],
+  GESTOR: ['documentos', 'meu-perfil', 'conta'],
   COLABORADOR: ['documentos', 'meu-perfil', 'conta'],
 };
 
@@ -93,6 +93,8 @@ export type RhAction =
   | 'documentos.revisar'
   /** vincula o copywriter ao colaborador e lança a comissão na folha */
   | 'comissoes.lancar'
+  /** edita a chave PIX de qualquer colaborador */
+  | 'pix.editar'
   | 'monitoramento.conferir';
 
 const RH_ACTIONS: Record<RhAction, RhPapel[]> = {
@@ -100,6 +102,7 @@ const RH_ACTIONS: Record<RhAction, RhPapel[]> = {
   'folha.editar': ['RH'],
   'documentos.revisar': ['RH'],
   'comissoes.lancar': ['RH'],
+  'pix.editar': ['RH'],
   'monitoramento.conferir': ['RH', 'CEO'],
 };
 

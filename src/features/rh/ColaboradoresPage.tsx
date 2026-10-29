@@ -16,6 +16,7 @@ import { useUrlSearchParams } from '@/hooks/useUrlSearchParams';
 import { rhService } from '@/services/rh.service';
 import type { RhColaborador } from '@/types/rh.types';
 import { Avatar } from './Avatar';
+import { PixCelula } from './Pix';
 import { dia, senioridadeLabel } from './rh-format';
 
 type Situacao = 'ativos' | 'desligados' | 'todos';
@@ -81,6 +82,7 @@ export default function ColaboradoresPage() {
       ...(verSalario
         ? [{ id: 'salario', header: 'Salário', align: 'right' as const, mobile: 'value' as const, cell: (c: RhColaborador) => <CurrencyValue centavos={c.salarioCentavos} /> }]
         : []),
+      ...(verSalario ? [{ id: 'pix', header: 'PIX', mobile: 'full' as const, cell: (c: RhColaborador) => <PixCelula pix={c.pix} nome={c.nome} /> }] : []),
       { id: 'status', header: 'Situação', cell: (c) => (c.ativo ? <Badge variant="positive">Ativo</Badge> : <Badge title={c.demissao ? `Desligado em ${dia(c.demissao)}` : undefined}>Desligado</Badge>) },
     ],
     [verSalario],

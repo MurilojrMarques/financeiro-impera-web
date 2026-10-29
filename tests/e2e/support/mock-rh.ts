@@ -19,7 +19,7 @@ function colaborador(p: (typeof PESSOAS)[number], papel: RhPapel, meuId: string)
     id: p.id, nome: p.nome, email: `${p.id}@impera.com`, celular: '(31) 99999-0000', camiseta: 'M', departamento: p.departamento,
     cargoBase: p.cargoBase, funcao: p.funcao, tipoCargo: 'operacional', senioridade: p.senioridade, subnivel: p.subnivel,
     gestor: nomeGestor(p.gestorId), gestorId: p.gestorId, inicio: '2026-03-02T00:00:00.000Z', demissao: null, ativo: true, foto: null,
-    ...(veTudo || proprio ? { nascimento: '1992-05-14T00:00:00.000Z', cnpj: '12.345.678/0001-90', endereco: 'Rua das Flores, 100 - Belo Horizonte/MG', contratoObs: 'ok' } : {}),
+    ...(veTudo || proprio ? { nascimento: '1992-05-14T00:00:00.000Z', cnpj: '12.345.678/0001-90', pix: 'ana.pix@teste.local', endereco: 'Rua das Flores, 100 - Belo Horizonte/MG', contratoObs: 'ok' } : {}),
     ...(veTudo || proprio ? { salarioCentavos: p.salario } : {}),
   };
 }
@@ -28,9 +28,10 @@ const FOLHA_ITENS = PESSOAS.map((p, i) => {
   const dias = p.id === 'c-carla' ? 22 : 30;
   const salario = Math.round((p.salario * dias) / 30);
   const comissao = i === 1 ? 50_000 : 0;
+  const impera = i === 2 ? 100_000 : 0; // ImperaCred do mês anterior, descontado nesta folha
   return {
     id: `i-${p.id}`, colaboradorId: p.id, salarioMensalCentavos: p.salario, diasTrabalhados: dias, salarioCentavos: salario,
-    comissaoCentavos: comissao, bonusCentavos: 0, descontoCentavos: 0, totalCentavos: salario + comissao,
+    comissaoCentavos: comissao, bonusCentavos: 0, descontoCentavos: 0, imperaCredCentavos: impera, totalCentavos: salario + comissao - impera,
     status: i === 0 ? 'PAGO' : 'PENDENTE', pagoEm: i === 0 ? '2026-11-05T00:00:00.000Z' : null, obs: null,
     colaborador: { id: p.id, nome: p.nome, departamento: p.departamento, funcao: p.funcao, cnpj: '12.345.678/0001-90' },
   };
@@ -38,7 +39,7 @@ const FOLHA_ITENS = PESSOAS.map((p, i) => {
 const soma = (f: (i: (typeof FOLHA_ITENS)[number]) => number) => FOLHA_ITENS.reduce((s, i) => s + f(i), 0);
 const RESUMO = {
   pessoas: FOLHA_ITENS.length, salariosCentavos: soma((i) => i.salarioCentavos), salariosMensaisCentavos: soma((i) => i.salarioMensalCentavos),
-  comissoesCentavos: soma((i) => i.comissaoCentavos), bonusCentavos: 0, descontosCentavos: 0, totalCentavos: soma((i) => i.totalCentavos),
+  comissoesCentavos: soma((i) => i.comissaoCentavos), imperaCredCentavos: soma((i) => i.imperaCredCentavos), bonusCentavos: 0, descontosCentavos: 0, totalCentavos: soma((i) => i.totalCentavos),
   pagoCentavos: soma((i) => (i.status === 'PAGO' ? i.totalCentavos : 0)), pendenteCentavos: soma((i) => (i.status === 'PENDENTE' ? i.totalCentavos : 0)),
 };
 
@@ -85,6 +86,10 @@ export function handleRh(path: string, papel: RhPapel, meuId: string): Reply | n
   }
   if (path === '/rh/colaboradores') return pg(visiveis.map((x) => colaborador(x, papel, meuId)));
 
+  if (path === '/rh/imperacred') {
+    if (!veTudo) return { status: 403, data: null };
+    return { data: { competencia: '2026-10', descontaEm: '2026-11', folhaDoDesconto: null, totalCentavos: 100_000, itens: [{ id: 'ic-1', colaboradorId: 'c-ana', competencia: '2026-10', valorCentavos: 100_000, observacao: 'adiantamento', criadoEm: '2026-10-20T12:00:00.000Z', colaborador: { id: 'c-ana', nome: PESSOAS[0]!.nome, departamento: PESSOAS[0]!.departamento } }] } };
+  }
   if (path === '/rh/folha') return veTudo ? { data: [{ competencia: '2026-10', status: 'ABERTA', fechadaEm: null, ...RESUMO }, { competencia: '2026-09', status: 'FECHADA', fechadaEm: '2026-10-06T12:00:00.000Z', ...RESUMO }] } : { status: 403, data: null };
   m = /^\/rh\/folha\/(\d{4}-\d{2})$/.exec(path);
   if (m) {
@@ -93,12 +98,14 @@ export function handleRh(path: string, papel: RhPapel, meuId: string): Reply | n
   }
 
   if (path === '/rh/comissoes') {
+    const base = { regra: '', mcBrCentavos: null, criativosCentavos: null, vslCentavos: null, otimizacoesCentavos: null, outrosCentavos: null, outrosRotulo: null, ativo: true, motivo: null, naFolhaCentavos: null };
     const todas = [
-      { copywriterId: 'cw-1', copywriterNome: 'ANA', colaborador: { id: PESSOAS[0]!.id, nome: PESSOAS[0]!.nome }, mcBrCentavos: 2_400_000, comissaoCentavos: 120_000, aPagarCentavos: 120_000, naFolhaCentavos: 0 },
-      { copywriterId: 'cw-2', copywriterNome: 'REAPER', colaborador: null, mcBrCentavos: -100_000, comissaoCentavos: -5_000, aPagarCentavos: 0, naFolhaCentavos: null },
+      { ...base, chave: 'cw-1', tipo: 'COPYWRITER', nome: 'ANA', status: 'CALCULADA', regra: '5% criativos + 5% VSL + R$ 500 por otimização', colaborador: { id: PESSOAS[0]!.id, nome: PESSOAS[0]!.nome }, mcBrCentavos: 2_400_000, criativosCentavos: 120_000, vslCentavos: 5_000, otimizacoesCentavos: 50_000, apuradaCentavos: 175_000, aPagarCentavos: 175_000, naFolhaCentavos: 0 },
+      { ...base, chave: 'cw-2', tipo: 'COPYWRITER', nome: 'CAROL', status: 'CALCULADA', regra: '5% criativos + 5% VSL + R$ 500 por otimização', colaborador: null, mcBrCentavos: 1_654_400, criativosCentavos: 82_772, vslCentavos: -11_727, otimizacoesCentavos: 50_000, apuradaCentavos: 121_045, aPagarCentavos: 121_045 },
+      { ...base, chave: 'GESTOR:LUCAS', tipo: 'GESTOR', nome: 'Lucas', status: 'EM_IMPLEMENTACAO', regra: '5% do MC BR das campanhas dele', motivo: 'Não bate com a folha (+R$ 3.690,88 em setembro) e falta a troca de gestor de 09/09.', colaborador: null, apuradaCentavos: null, aPagarCentavos: null },
     ];
-    const itens = veTudo ? todas : todas.filter((i) => i.colaborador?.id === meuId);
-    return { data: { competencia: '2026-10', folha: { status: 'ABERTA' }, disponivel: true, estado: 'PROVISORIO', itens, sugestoes: {}, totais: veTudo ? { comissaoCentavos: 115_000, aPagarCentavos: 120_000, mcBrComissionavelCentavos: 2_300_000, semVinculo: 1 } : null } };
+    if (!veTudo) return { status: 403, data: null };
+    return { data: { competencia: '2026-10', folha: { status: 'ABERTA' }, disponivel: true, estado: 'PROVISORIO', completa: true, itens: todas, sugestoes: {}, vsl: { disponivel: true, mensagem: null, semDono: [] }, totais: { comissaoCentavos: 296_045, aPagarCentavos: 296_045, semVinculo: 1, emImplementacao: 1 } } };
   }
   if (path === '/rh/documentos/resumo') {
     if (!veTudo) return { status: 403, data: null };

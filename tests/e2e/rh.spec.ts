@@ -20,6 +20,8 @@ test.describe('RH', () => {
     await page.getByRole('link', { name: 'Colaboradores' }).click();
     await expect(page.getByRole('row', { name: /Ana Caroliny/ })).toBeVisible();
     await expect(page.getByRole('columnheader', { name: 'Salário' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'PIX' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Copiar a chave PIX de Ana Caroliny/ })).toBeVisible();
     await shot(page, 'rh-colaboradores');
 
     await page.getByRole('row', { name: /Ana Caroliny/ }).click();
@@ -27,6 +29,8 @@ test.describe('RH', () => {
     await expect(page.getByText('Salário mensal atual').first()).toBeVisible();
     await expect(page.getByText('Promoção por desempenho').first()).toBeVisible();
     await expect(page.getByText('12.345.678/0001-90').first()).toBeVisible();
+    await expect(page.getByText('ana.pix@teste.local').first()).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Editar a chave PIX' })).toBeVisible(); // só o RH edita
     await shot(page, 'rh-ficha');
 
     await page.getByRole('link', { name: 'Folha', exact: true }).click();
@@ -34,12 +38,19 @@ test.describe('RH', () => {
     await expect(page.getByText('Folha de Out/2026').first()).toBeVisible();
     await expect(page.getByText('22/30').first()).toBeVisible(); // proporcional
     await expect(page.getByRole('button', { name: /Fechar folha/ })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'ImperaCred' })).toBeVisible();
+    await page.getByRole('button', { name: 'ImperaCred' }).click();
+    await expect(page.getByText('recebe R$ 2.500 no mês seguinte')).toBeVisible();
+    await expect(page.getByText('Total a descontar em Nov/2026')).toBeVisible();
+    await page.keyboard.press('Escape');
     await shot(page, 'rh-folha');
 
     await page.getByRole('link', { name: 'Comissões' }).click();
     await expect(page.getByText('Comissão do Front').first()).toBeVisible();
     await expect(page.getByText('Mês em aberto no sistema de copy').first()).toBeVisible();
-    await expect(page.getByText('REAPER').first()).toBeVisible();
+    await expect(page.getByText('CAROL').first()).toBeVisible(); // quem tem valor a pagar; negativo e desligado nem aparecem
+    await expect(page.getByText('Em implementação').first()).toBeVisible(); // Lucas: não bate com a folha, fica fora do total
+    await expect(page.getByRole('button', { name: 'Otimizações' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Lançar na folha' })).toBeDisabled(); // mês provisório
     await shot(page, 'rh-comissoes');
 
@@ -60,11 +71,12 @@ test.describe('RH', () => {
     await shot(page, 'rh-monitoramento');
   });
 
-  test('gestor: só documentos, comissões e meu perfil; sem lista de colaboradores, folha nem monitoramento', async ({ page }) => {
+  test('gestor: só documentos e meu perfil; sem comissões, lista de colaboradores, folha nem monitoramento', async ({ page }) => {
     await installMockApi(page, { perfil: 'SEM_FINANCEIRO', rhPapel: 'GESTOR', colaboradorId: 'c-gestora' });
     await page.goto('/');
     await expect(page).toHaveURL(/\/rh\/documentos/);
     await expect(page.getByRole('link', { name: 'Colaboradores' })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'Comissões' })).toHaveCount(0); // comissões é só do RH e do CEO
     await expect(page.getByRole('link', { name: 'Meu perfil' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Folha', exact: true })).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Monitoramento' })).toHaveCount(0);

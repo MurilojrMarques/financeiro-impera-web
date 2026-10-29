@@ -23,6 +23,8 @@ export interface RhColaborador {
   /** só para quem vê dados pessoais (RH/CEO e o próprio) */
   nascimento?: string | null;
   cnpj?: string | null;
+  /** chave PIX (não vem do sistema do RH: é mantida aqui pelo RH) */
+  pix?: string | null;
   endereco?: string | null;
   motivoDemissao?: string | null;
   discordUserId?: string | null;
@@ -81,6 +83,8 @@ export interface RhFolhaResumo {
   comissoesCentavos: number;
   bonusCentavos: number;
   descontosCentavos: number;
+  /** ImperaCred (adiantamento do mês anterior) descontado nesta folha */
+  imperaCredCentavos: number;
   totalCentavos: number;
   pagoCentavos: number;
   pendenteCentavos: number;
@@ -101,6 +105,8 @@ export interface RhFolhaItem {
   comissaoCentavos: number;
   bonusCentavos: number;
   descontoCentavos: number;
+  /** adiantamento de salário (ImperaCred) do mês anterior, descontado aqui */
+  imperaCredCentavos: number;
   totalCentavos: number;
   status: RhStatusPagamento;
   pagoEm: string | null;
@@ -160,27 +166,73 @@ export interface RhNotasResumo {
   itens: RhNotasResumoItem[];
 }
 
-/** GET /rh/comissoes: comissão do Front por colaborador, lida do sistema de copy */
+/** GET /rh/comissoes: comissão do time do Front por pessoa (criativos e VSL pelo MC BR, otimizações, liderança, gestor, editor e fixo) */
+export type RhComissaoTipo = 'COPYWRITER' | 'GESTOR' | 'EDITOR' | 'FIXO';
 export interface RhComissaoItem {
-  copywriterId: string;
-  copywriterNome: string;
+  /** uuid do copywriter no copy, ou GESTOR:GREG / EDITOR:MINEIRO / FIXO:IAGO */
+  chave: string;
+  tipo: RhComissaoTipo;
+  nome: string;
+  /** EM_IMPLEMENTACAO = não bate com a folha ou falta a fonte do dado: não entra no total nem no lançamento */
+  status: 'CALCULADA' | 'EM_IMPLEMENTACAO';
+  motivo: string | null;
+  ativo: boolean;
+  regra: string;
   colaborador: { id: string; nome: string } | null;
-  mcBrCentavos: number;
-  comissaoCentavos: number;
-  aPagarCentavos: number;
+  mcBrCentavos: number | null;
+  criativosCentavos: number | null;
+  vslCentavos: number | null;
+  otimizacoesCentavos: number | null;
+  outrosCentavos: number | null;
+  outrosRotulo: string | null;
+  apuradaCentavos: number | null;
+  aPagarCentavos: number | null;
   naFolhaCentavos: number | null;
 }
+export interface RhComissaoVsl {
+  disponivel: boolean;
+  mensagem: string | null;
+  semDono: { vsl: string; mcBrCentavos: number }[];
+}
 export type RhComissoes =
-  | { competencia: string; folha: { status: 'ABERTA' | 'FECHADA' } | null; disponivel: false; motivo: string; mensagem: string; itens: []; sugestoes: Record<string, never>; totais: null }
+  | { competencia: string; folha: { status: 'ABERTA' | 'FECHADA' } | null; disponivel: false; motivo: string; mensagem: string; itens: []; sugestoes: Record<string, never>; totais: null; vsl: null }
   | {
       competencia: string;
       folha: { status: 'ABERTA' | 'FECHADA' } | null;
       disponivel: true;
       estado: 'FECHADO' | 'PROVISORIO';
+      /** false = mês anterior à regra completa (só o 5% dos criativos) */
+      completa: boolean;
       itens: RhComissaoItem[];
       sugestoes: Record<string, { id: string; nome: string }[]>;
-      totais: { comissaoCentavos: number; aPagarCentavos: number; mcBrComissionavelCentavos: number; semVinculo: number } | null;
+      vsl: RhComissaoVsl | null;
+      totais: { comissaoCentavos: number; aPagarCentavos: number; semVinculo: number; emImplementacao: number } | null;
     };
+/** GET /rh/imperacred: adiantamentos de salário feitos em `competencia`, descontados na folha do mês seguinte */
+export interface RhImperaCred {
+  id: string;
+  colaboradorId: string;
+  competencia: string;
+  valorCentavos: number;
+  observacao: string | null;
+  criadoEm: string;
+  colaborador: { id: string; nome: string; departamento: string };
+}
+export interface RhImperaCredMes {
+  competencia: string;
+  descontaEm: string;
+  folhaDoDesconto: { status: RhStatusFolha } | null;
+  totalCentavos: number;
+  itens: RhImperaCred[];
+}
+export interface RhOtimizacao {
+  id: string;
+  competencia: string;
+  copywriter: string;
+  descricao: string;
+  valorCentavos: number;
+  criadoEm: string;
+}
 
 export interface RhDocumentoEnvio {
   tipo: RhTipoDocumento;

@@ -1,8 +1,8 @@
 import type {
   RhAlteracao, RhColaborador, RhDocumento, RhDocumentoEnvio, RhEu, RhFolhaDetalhe, RhFolhaItem, RhFolhaItemEdicao, RhFolhaListada,
-  RhComissoes, RhMonitoramento, RhMovimentacao, RhNotasResumo, RhPainel, RhResultadoSync, RhStatusDocumento,
+  RhComissoes, RhImperaCred, RhImperaCredMes, RhOtimizacao, RhMonitoramento, RhMovimentacao, RhNotasResumo, RhPainel, RhResultadoSync, RhStatusDocumento,
 } from '@/types/rh.types';
-import { apiDownload, apiGet, apiPatch, apiPost, apiPut, apiUploadForm } from './api.client';
+import { apiDelete, apiDownload, apiGet, apiPatch, apiPost, apiPut, apiUploadForm } from './api.client';
 import { pagedGetter } from './report.helpers';
 
 /**
@@ -19,6 +19,10 @@ export const rhService = {
   foto: (id: string) => apiDownload(`/rh/colaboradores/${id}/foto`),
 
   folhas: (signal?: AbortSignal) => apiGet<RhFolhaListada[]>('/rh/folha', { signal }),
+  imperaCred: (competencia: string, signal?: AbortSignal) => apiGet<RhImperaCredMes>('/rh/imperacred', { params: { competencia }, signal }),
+  lancarImperaCred: (b: { colaboradorId: string; competencia: string; valorCentavos: number; observacao?: string }) => apiPost<RhImperaCred & { descontaEm: string }>('/rh/imperacred', b),
+  removerImperaCred: (id: string) => apiDelete(`/rh/imperacred/${id}`),
+  salvarPix: (id: string, pix: string | null) => apiPatch<{ id: string; pix: string | null }>(`/rh/colaboradores/${id}/pix`, { pix }),
   folha: (competencia: string, signal?: AbortSignal) => apiGet<RhFolhaDetalhe>(`/rh/folha/${competencia}`, { signal }),
   gerarFolha: (competencia: string, recalcular = false) =>
     apiPost<{ competencia: string; incluidos: number; recalculados: number; pessoas: number }>(`/rh/folha/${competencia}/gerar${recalcular ? '?recalcular=true' : ''}`),
@@ -34,7 +38,11 @@ export const rhService = {
     apiPatch<{ id: string; status: RhStatusDocumento }>(`/rh/documentos/${id}/status`, { status, ...(motivo ? { motivo } : {}) }),
 
   comissoes: (competencia: string, signal?: AbortSignal) => apiGet<RhComissoes>('/rh/comissoes', { params: { competencia }, signal }),
-  vincularComissao: (copywriterId: string, colaboradorId: string | null) => apiPut<{ copywriterId: string; colaboradorId: string | null }>('/rh/comissoes/vinculos', { copywriterId, colaboradorId }),
+  vincularComissao: (chave: string, colaboradorId: string | null) => apiPut<{ chave: string; colaboradorId: string | null }>('/rh/comissoes/vinculos', { chave, colaboradorId }),
+  otimizacoes: (competencia: string, signal?: AbortSignal) => apiGet<RhOtimizacao[]>('/rh/comissoes/otimizacoes', { params: { competencia }, signal }),
+  criarOtimizacao: (b: { competencia: string; copywriter: string; descricao: string }) => apiPost<RhOtimizacao>('/rh/comissoes/otimizacoes', b),
+  removerOtimizacao: (id: string) => apiDelete(`/rh/comissoes/otimizacoes/${id}`),
+  salvarVsl: (b: { chave: string; dono: string | null; editor: string | null; mesmaVsl: string | null }) => apiPut<{ id: string; chave: string }>('/rh/comissoes/vsl', b),
   lancarComissoes: (competencia: string) => apiPost<{ competencia: string; pessoas: number; alterados: number; totalCentavos: number }>('/rh/comissoes/lancar', { competencia }),
 
   monitoramento: (signal?: AbortSignal) => apiGet<RhMonitoramento>('/rh/monitoramento', { signal }),
