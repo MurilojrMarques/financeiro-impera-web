@@ -195,6 +195,10 @@ export interface RhComissaoVsl {
   /** De onde vieram as VSLs: o sistema de copy (dono e editor decididos lá) ou o RedTrack direto, com o cadastro local */
   fonte?: 'COPY' | 'REDTRACK' | null;
 }
+/** De onde veio o bônus de lead e MLD (a coluna Otimizações): do sistema de copy, onde o admin confirma, ou do que o RH lançou aqui */
+export interface RhComissaoOtimizacoes {
+  fonte: 'COPY' | 'RH';
+}
 export type RhComissoes =
   | { competencia: string; folha: { status: 'ABERTA' | 'FECHADA' } | null; disponivel: false; motivo: string; mensagem: string; itens: []; sugestoes: Record<string, never>; totais: null; vsl: null }
   | {
@@ -207,6 +211,7 @@ export type RhComissoes =
       itens: RhComissaoItem[];
       sugestoes: Record<string, { id: string; nome: string }[]>;
       vsl: RhComissaoVsl | null;
+      otimizacoes?: RhComissaoOtimizacoes;
       totais: { comissaoCentavos: number; aPagarCentavos: number; semVinculo: number; emImplementacao: number } | null;
     };
 /** GET /rh/imperacred: adiantamentos de salário feitos em `competencia`, descontados na folha do mês seguinte */

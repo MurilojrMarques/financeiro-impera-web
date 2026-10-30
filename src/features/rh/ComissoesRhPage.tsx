@@ -179,7 +179,7 @@ export default function ComissoesRhPage() {
               onChange={(e) => update((prev) => { const n = new URLSearchParams(prev); n.set('mes', e.target.value || mesAtual()); return n; })}
               className="h-9 w-full sm:w-44"
             />
-            {ehRh && ok?.completa && <Button variant="outline" onClick={() => setOtimAberta(true)}>Otimizações</Button>}
+            {ehRh && ok?.completa && ok.otimizacoes?.fonte !== 'COPY' && <Button variant="outline" onClick={() => setOtimAberta(true)}>Otimizações</Button>}
             {ehRh && (
               <Button disabled={!ok || !!motivoSemLancar || lancar.isPending} onClick={() => lancar.mutate()}>
                 Lançar na folha
@@ -193,6 +193,7 @@ export default function ComissoesRhPage() {
         {ok?.estado === 'PROVISORIO' && <Notice tone="warning">Mês em aberto no sistema de copy: os valores são provisórios e mudam até o fechamento.</Notice>}
         {ok && !ok.completa && <Notice tone="info">Antes de setembro/2026 vale só o 5% do MC BR dos criativos: VSL, otimizações e as demais regras começam em setembro.</Notice>}
         {ok?.vsl && !ok.vsl.disponivel && <Notice tone="warning">Não foi possível ler as VSLs no RedTrack ({ok.vsl.mensagem ?? 'sem resposta'}). Os valores de VSL, liderança, editor, gestor e fixo não aparecem até o RedTrack voltar.</Notice>}
+        {ok?.completa && ok.otimizacoes?.fonte === 'COPY' && <Notice tone="info">O bônus de lead e MLD deste mês vem do sistema de copy, confirmado pelo admin: a coluna Otimizações já traz o que ele decidiu e não se lança aqui.</Notice>}
         {ehRh && ok && motivoSemLancar && ok.estado === 'FECHADO' && <Notice tone="info">{motivoSemLancar}</Notice>}
         {ok && ok.totais && (
           <KpiGrid cols={3}>
