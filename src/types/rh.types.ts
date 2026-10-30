@@ -192,6 +192,8 @@ export interface RhComissaoItem {
 export interface RhComissaoVsl {
   disponivel: boolean;
   mensagem: string | null;
+  /** De onde vieram as VSLs: o sistema de copy (dono e editor decididos lá) ou o RedTrack direto, com o cadastro local */
+  fonte?: 'COPY' | 'REDTRACK' | null;
 }
 export type RhComissoes =
   | { competencia: string; folha: { status: 'ABERTA' | 'FECHADA' } | null; disponivel: false; motivo: string; mensagem: string; itens: []; sugestoes: Record<string, never>; totais: null; vsl: null }
