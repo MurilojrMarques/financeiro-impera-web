@@ -105,7 +105,7 @@ export function handleRh(path: string, papel: RhPapel, meuId: string): Reply | n
       { ...base, chave: 'GESTOR:LUCAS', tipo: 'GESTOR', nome: 'Lucas', status: 'EM_IMPLEMENTACAO', regra: '5% do MC BR das campanhas dele', motivo: 'Não bate com a folha (+R$ 3.690,88 em setembro) e falta a troca de gestor de 09/09.', colaborador: null, apuradaCentavos: null, aPagarCentavos: null },
     ];
     if (!veTudo) return { status: 403, data: null };
-    return { data: { competencia: '2026-10', folha: { status: 'ABERTA' }, disponivel: true, estado: 'PROVISORIO', completa: true, itens: todas, sugestoes: {}, vsl: { disponivel: true, mensagem: null, semDono: [] }, totais: { comissaoCentavos: 296_045, aPagarCentavos: 296_045, semVinculo: 1, emImplementacao: 1 } } };
+    return { data: { competencia: '2026-10', folha: { status: 'ABERTA' }, disponivel: true, estado: 'PROVISORIO', completa: true, itens: todas, sugestoes: {}, vsl: { disponivel: true, mensagem: null }, totais: { comissaoCentavos: 296_045, aPagarCentavos: 296_045, semVinculo: 1, emImplementacao: 1 } } };
   }
   if (path === '/rh/documentos/resumo') {
     if (!veTudo) return { status: 403, data: null };

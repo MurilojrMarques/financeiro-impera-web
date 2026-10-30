@@ -42,7 +42,6 @@ export const rhService = {
   otimizacoes: (competencia: string, signal?: AbortSignal) => apiGet<RhOtimizacao[]>('/rh/comissoes/otimizacoes', { params: { competencia }, signal }),
   criarOtimizacao: (b: { competencia: string; copywriter: string; descricao: string }) => apiPost<RhOtimizacao>('/rh/comissoes/otimizacoes', b),
   removerOtimizacao: (id: string) => apiDelete(`/rh/comissoes/otimizacoes/${id}`),
-  salvarVsl: (b: { chave: string; dono: string | null; editor: string | null; mesmaVsl: string | null }) => apiPut<{ id: string; chave: string }>('/rh/comissoes/vsl', b),
   lancarComissoes: (competencia: string) => apiPost<{ competencia: string; pessoas: number; alterados: number; totalCentavos: number }>('/rh/comissoes/lancar', { competencia }),
 
   monitoramento: (signal?: AbortSignal) => apiGet<RhMonitoramento>('/rh/monitoramento', { signal }),

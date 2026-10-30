@@ -192,7 +192,6 @@ export interface RhComissaoItem {
 export interface RhComissaoVsl {
   disponivel: boolean;
   mensagem: string | null;
-  semDono: { vsl: string; mcBrCentavos: number }[];
 }
 export type RhComissoes =
   | { competencia: string; folha: { status: 'ABERTA' | 'FECHADA' } | null; disponivel: false; motivo: string; mensagem: string; itens: []; sugestoes: Record<string, never>; totais: null; vsl: null }
