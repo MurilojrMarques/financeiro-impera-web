@@ -20,6 +20,7 @@ import { formatCurrency } from '@/lib/currency';
 import { dimLabel } from '@/lib/formatters';
 import { callCenterService } from '@/services/call-center.service';
 import { custosService } from '@/services/custos.service';
+import { FechamentoCallCenter } from './FechamentoCallCenter';
 import { ReceitaCustosCallCenter } from './ReceitaCustosCallCenter';
 import type { ExtraFilterKey } from '@/types/filters.types';
 import type { CallCenterReceitaCustos } from '@/types/trafego.types';
@@ -48,6 +49,8 @@ export default function CallCenterPage() {
   const recup = useReport('call-center', 'recuperacoes', callCenterService.recuperacoes, params);
   const comissoes = useReport('call-center', 'comissoes', callCenterService.comissoes, params);
   const rc = useWithComparison<CallCenterReceitaCustos>('call-center', 'receita-custos', callCenterService.receitaCustos, { keys: KEYS });
+  // Fechamento na fórmula do dono (Financeiro/Admin): é ele quem dá os números de Faturamento, Pedidos, Ticket e Comissão.
+  const fechamento = useReport('call-center', 'fechamento', callCenterService.fechamento, { de: range.de, ate: range.ate }, { enabled: verCustos, autoRefresh: false });
   const lancamentos = useReport('custos', 'resumo#call-center', (p, s) => custosService.resumo(p, s), { de: range.de, ate: range.ate, grupo: 'CALL_CENTER' }, { enabled: verCustos });
 
   const cur = resumo.current;
@@ -57,6 +60,8 @@ export default function CallCenterPage() {
   const rcPrev = rc.comparison.data?.data;
   const rcLoading = rc.current.isPending;
   const semCustos = rcr && rcr.sobraCentavos === null ? 'Custos e margem do Call Center exigem perfil Financeiro ou Administrador' : undefined;
+  const fech = verCustos ? fechamento.data?.data : undefined;
+  const fechLoading = verCustos && fechamento.isPending;
   const cmpRc = (p: number | null | undefined) => (rc.hasComparison ? { previous: p ?? undefined, loading: rc.comparison.isPending } : undefined);
 
   if (cur.isError && !cur.data) {
@@ -73,15 +78,27 @@ export default function CallCenterPage() {
       <KpiGrid cols={7}>
         <KpiCard
           label="Faturamento"
-          value={rcr?.faturamentoCentavos}
-          loading={rcLoading}
+          value={verCustos ? fech?.vendas.totalCentavos : rcr?.faturamentoCentavos}
+          loading={verCustos ? fechLoading : rcLoading}
           highlight
           hero
-          comparison={cmpRc(rcPrev?.faturamentoCentavos)}
-          description={rcr ? `Valor sem juros dos pagamentos. Líquida após estornos: ${formatCurrency(rcr.receitaLiquidaCentavos)}` : undefined}
+          comparison={verCustos ? undefined : cmpRc(rcPrev?.faturamentoCentavos)}
+          description={
+            verCustos
+              ? 'Vendas de origem Call ou Whats pagas no período e ainda pagas (fórmula do fechamento do dono)'
+              : rcr
+                ? `Valor sem juros dos pagamentos. Líquida após estornos: ${formatCurrency(rcr.receitaLiquidaCentavos)}`
+                : undefined
+          }
         />
-        <KpiCard label="Pedidos" format="integer" value={rcr?.pedidos} loading={rcLoading} comparison={cmpRc(rcPrev?.pedidos)} />
-        <KpiCard label="Ticket médio" value={rcr?.ticketMedioCentavos ?? undefined} loading={rcLoading} comparison={cmpRc(rcPrev?.ticketMedioCentavos)} description="Faturamento ÷ pedidos" />
+        <KpiCard label="Pedidos" format="integer" value={verCustos ? fech?.vendas.pedidos : rcr?.pedidos} loading={verCustos ? fechLoading : rcLoading} comparison={verCustos ? undefined : cmpRc(rcPrev?.pedidos)} />
+        <KpiCard
+          label="Ticket médio"
+          value={verCustos ? (fech && fech.vendas.pedidos > 0 ? Math.round(fech.vendas.totalCentavos / fech.vendas.pedidos) : undefined) : (rcr?.ticketMedioCentavos ?? undefined)}
+          loading={verCustos ? fechLoading : rcLoading}
+          comparison={verCustos ? undefined : cmpRc(rcPrev?.ticketMedioCentavos)}
+          description="Faturamento ÷ pedidos"
+        />
         <KpiCard label="Unidades" format="integer" value={rcr?.unidades} loading={rcLoading} comparison={cmpRc(rcPrev?.unidades)} description={rcr && rcr.pedidos > 0 ? `${(rcr.unidades / rcr.pedidos).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} por pedido` : undefined} />
         <KpiCard
           label="Sobra do Call Center"
@@ -93,9 +110,20 @@ export default function CallCenterPage() {
           comparison={cmpRc(rcPrev?.sobraCentavos)}
           description="Receita − taxas, frete, produto e custos da operação"
         />
-        <KpiCard label="Comissão" value={comissoes.data?.data.comissaoCentavos} loading={comissoes.isPending} description="20% de tudo que o Call Center vende" />
+        <KpiCard
+          label="Comissão"
+          value={verCustos ? fech?.comissao.vendasCentavos : comissoes.data?.data.comissaoCentavos}
+          loading={verCustos ? fechLoading : comissoes.isPending}
+          description={
+            verCustos && fech
+              ? `20% das vendas. Desconto de chargeback ${formatCurrency(fech.comissao.descontoChargebackCentavos)}, total final ${formatCurrency(fech.comissao.liquidaCentavos)}`
+              : '20% de tudo que o Call Center vende'
+          }
+        />
         <KpiCard label="Margem do Call Center" format="percent" value={rcr?.margemBp == null ? undefined : rcr.margemBp / 100} loading={rcLoading} unavailableReason={semCustos} comparison={cmpRc(rcPrev?.margemBp == null ? undefined : rcPrev.margemBp / 100)} />
       </KpiGrid>
+
+      {verCustos && <FechamentoCallCenter />}
 
       <ReceitaCustosCallCenter q={rc} />
 

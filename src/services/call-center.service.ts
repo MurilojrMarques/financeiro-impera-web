@@ -1,6 +1,7 @@
 import type {
   CallCenterComissoes, CallCenterCustos, CallCenterResumo, DimRow, RecuperacaoRow, SerieRow, VendaItem,
 } from '@/types/financial.types';
+import type { CallCenterFechamento } from '@/types/fechamento.types';
 import type { CallCenterReceitaCustos } from '@/types/trafego.types';
 import { getter, pagedGetter } from './report.helpers';
 
@@ -17,5 +18,7 @@ export const callCenterService = {
   receitaCustos: getter<CallCenterReceitaCustos>('/call-center/receita-custos'),
   /** exige FINANCEIRO/ADMIN */
   custos: getter<CallCenterCustos>('/call-center/custos'),
+  /** exige FINANCEIRO/ADMIN; `mes` = AAAA-MM */
+  fechamento: getter<CallCenterFechamento>('/call-center/fechamento'),
   evolucao: getter<SerieRow[]>('/call-center/evolucao'),
 };
