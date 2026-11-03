@@ -22,12 +22,20 @@ export interface FechamentoAjuste {
   efeitoCentavos: number;
 }
 
+/** De onde vem a posição dos pedidos: o mês foi fechado numa data, foi pedida na consulta, ou é o fim do período. */
+export interface FechamentoPosicao {
+  /** AAAA-MM-DD: como estavam os pedidos no começo desse dia; nulo = fim do período */
+  em: string | null;
+  fonte: 'FECHAMENTO' | 'INFORMADA' | 'FIM_DO_PERIODO';
+}
+
 export interface CallCenterFechamento {
   mes: string;
   periodo: { de: string; ate: string };
   vendas: { pedidos: number; totalCentavos: number; porMetodo: FechamentoMetodo[] };
   chargebacks: FechamentoContagem;
   ajustes: FechamentoAjuste[];
+  posicao: FechamentoPosicao;
   comissao: { percentual: number; vendasCentavos: number; descontoChargebackCentavos: number; liquidaCentavos: number };
   avisos: {
     semOrigem: FechamentoContagem;

@@ -1,3 +1,5 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { ErrorState } from '@/components/feedback/ErrorState';
 import { ContentSection } from '@/components/layout/ContentSection';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -5,11 +7,22 @@ import { useFilters } from '@/hooks/useFilters';
 import { useReport } from '@/hooks/useReport';
 import { formatCurrency } from '@/lib/currency';
 import { callCenterService } from '@/services/call-center.service';
+import { ApiError } from '@/types/api.types';
 import type { FechamentoContagem } from '@/types/fechamento.types';
 
 const METODO: Record<string, string> = { CARTAO: 'Cartão', BOLETO: 'Boleto', PIX: 'Pix' };
 const pedidos = (n: number) => `${n.toLocaleString('pt-BR')} ${n === 1 ? 'pedido' : 'pedidos'}`;
 const dia = (iso: string) => iso.split('-').reverse().join('/');
+
+/** AAAA-MM quando o período é o mês inteiro (dia 1 ao último dia); só um mês inteiro se fecha. */
+function competenciaDe(de: string, ate: string): string | null {
+  const mes = de.slice(0, 7);
+  const [a, m] = mes.split('-').map(Number) as [number, number];
+  const ultimo = new Date(Date.UTC(a, m, 0)).getUTCDate();
+  return de === `${mes}-01` && ate === `${mes}-${String(ultimo).padStart(2, '0')}` ? mes : null;
+}
+
+const erroTexto = (e: unknown, padrao: string) => (e instanceof ApiError && (e.status === 409 || e.status === 422) ? e.message : padrao);
 
 function Aviso({ c, children }: { c: FechamentoContagem; children: string }) {
   if (c.pedidos === 0) return null;
@@ -35,6 +48,27 @@ export function FechamentoCallCenter({ posicao, onPosicao }: { posicao: string; 
   const { range } = useFilters();
   const q = useReport('call-center', 'fechamento', callCenterService.fechamento, { de: range.de, ate: range.ate, ...(posicao ? { posicao } : {}) }, { autoRefresh: false });
   const f = q.data?.data;
+  const qc = useQueryClient();
+  const competencia = competenciaDe(range.de, range.ate);
+  const fechadoEm = f?.posicao.fonte === 'FECHAMENTO' ? f.posicao.em : null;
+  const atualizar = () => void qc.invalidateQueries({ queryKey: ['call-center'] });
+  const fechar = useMutation({
+    mutationFn: () => callCenterService.fecharMes(competencia!, posicao),
+    onSuccess: () => {
+      toast.success(`Mês fechado em ${dia(posicao)}: a tela passa a mostrar os pedidos como estavam nesse dia.`);
+      onPosicao('');
+      atualizar();
+    },
+    onError: (e) => toast.error(erroTexto(e, 'Não foi possível fechar o mês.')),
+  });
+  const reabrir = useMutation({
+    mutationFn: () => callCenterService.reabrirMes(competencia!),
+    onSuccess: () => {
+      toast.success('Mês reaberto: o fechamento volta a usar o fim do período.');
+      atualizar();
+    },
+    onError: (e) => toast.error(erroTexto(e, 'Não foi possível reabrir o mês.')),
+  });
   const temAviso =
     f !== undefined &&
     f.avisos.semOrigem.pedidos +
@@ -48,26 +82,48 @@ export function FechamentoCallCenter({ posicao, onPosicao }: { posicao: string; 
   return (
     <ContentSection
       title="Fechamento do Call Center"
-      description={`Fórmula do fechamento do dono, de ${dia(range.de)} a ${dia(range.ate)}: vendas de origem Call ou Whats pagas no período e ainda pagas ${posicao ? `na posição de ${dia(posicao)}` : 'no fim dele'}, menos os chargebacks de pedidos pagos antes dele. Quem foi estornado no próprio período sai das duas pontas.`}
+      description={`Fórmula do fechamento do dono, de ${dia(range.de)} a ${dia(range.ate)}: vendas de origem Call ou Whats pagas no período e ainda pagas ${f?.posicao.em ? `na posição de ${dia(f.posicao.em)}${fechadoEm ? ' (data em que o mês foi fechado)' : ''}` : 'no fim dele'}, menos os chargebacks de pedidos pagos antes dele. Quem foi estornado no próprio período sai das duas pontas.`}
       actions={
-        <label
-          className="flex items-center gap-2 text-sm text-muted-foreground"
-          title="Como estavam os pedidos no começo deste dia. Vazio = fim do período. Serve para comparar com um arquivo exportado depois do fim do período."
-        >
-          Posição em
-          <input
-            type="date"
-            value={posicao}
-            min={range.ate}
-            onChange={(e) => onPosicao(e.target.value)}
-            className="rounded-md border border-input bg-background px-2 py-1 text-sm text-foreground"
-          />
-          {posicao && (
-            <button type="button" onClick={() => onPosicao('')} className="text-xs underline underline-offset-2">
-              fim do período
+        fechadoEm && !posicao ? (
+          <div className="flex items-center gap-2 text-sm">
+            <span className="rounded-md border border-border bg-muted/50 px-2 py-1 text-foreground">Mês fechado em {dia(fechadoEm)}</span>
+            <button type="button" disabled={reabrir.isPending} onClick={() => reabrir.mutate()} className="text-xs text-muted-foreground underline underline-offset-2">
+              reabrir
             </button>
-          )}
-        </label>
+          </div>
+        ) : (
+          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            <label
+              className="flex items-center gap-2"
+              title="Como estavam os pedidos no começo deste dia. Vazio = fim do período. Serve para comparar com um arquivo exportado depois do fim do período."
+            >
+              Posição em
+              <input
+                type="date"
+                value={posicao}
+                min={range.ate}
+                onChange={(e) => onPosicao(e.target.value)}
+                className="rounded-md border border-input bg-background px-2 py-1 text-sm text-foreground"
+              />
+            </label>
+            {posicao && (
+              <button type="button" onClick={() => onPosicao('')} className="text-xs underline underline-offset-2">
+                fim do período
+              </button>
+            )}
+            {posicao && competencia && (
+              <button
+                type="button"
+                disabled={fechar.isPending}
+                onClick={() => fechar.mutate()}
+                className="rounded-md border border-input bg-background px-2 py-1 text-xs text-foreground hover:bg-muted"
+                title="Guarda esta data como a do fechamento do mês: a tela passa a mostrar sempre o mesmo número, sem escolher a data."
+              >
+                Fechar o mês nesta data
+              </button>
+            )}
+          </div>
+        )
       }
     >
       {q.isError && !q.data ? (

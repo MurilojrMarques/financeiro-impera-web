@@ -88,7 +88,7 @@ export default function CallCenterPage() {
           comparison={verCustos ? undefined : cmpRc(rcPrev?.faturamentoCentavos)}
           description={
             verCustos
-              ? 'Vendas de origem Call ou Whats pagas no período e ainda pagas (fórmula do fechamento do dono)'
+              ? `Vendas de origem Call ou Whats pagas no período e ainda pagas (fórmula do fechamento do dono). ${fech?.posicao.em ? `Posição em ${fech.posicao.em.split('-').reverse().join('/')}${fech.posicao.fonte === 'FECHAMENTO' ? ' (mês fechado)' : ''}.` : 'Posição no fim do período.'}`
               : rcr
                 ? `Valor sem juros dos pagamentos. Líquida após estornos: ${formatCurrency(rcr.receitaLiquidaCentavos)}`
                 : undefined
