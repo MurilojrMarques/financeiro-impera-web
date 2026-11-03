@@ -31,9 +31,9 @@ const TH = 'py-2 text-xs font-medium uppercase tracking-wide text-muted-foregrou
  * antes do período. Só Financeiro e Administrador. Os números vêm do que o Pagah entrega direto: a origem sai do
  * vendedor de cada pedido.
  */
-export function FechamentoCallCenter() {
+export function FechamentoCallCenter({ posicao, onPosicao }: { posicao: string; onPosicao: (v: string) => void }) {
   const { range } = useFilters();
-  const q = useReport('call-center', 'fechamento', callCenterService.fechamento, { de: range.de, ate: range.ate }, { autoRefresh: false });
+  const q = useReport('call-center', 'fechamento', callCenterService.fechamento, { de: range.de, ate: range.ate, ...(posicao ? { posicao } : {}) }, { autoRefresh: false });
   const f = q.data?.data;
   const temAviso =
     f !== undefined &&
@@ -48,7 +48,27 @@ export function FechamentoCallCenter() {
   return (
     <ContentSection
       title="Fechamento do Call Center"
-      description={`Fórmula do fechamento do dono, de ${dia(range.de)} a ${dia(range.ate)}: vendas de origem Call ou Whats pagas no período e ainda pagas no fim dele, menos os chargebacks de pedidos pagos antes dele. Quem foi estornado no próprio período sai das duas pontas.`}
+      description={`Fórmula do fechamento do dono, de ${dia(range.de)} a ${dia(range.ate)}: vendas de origem Call ou Whats pagas no período e ainda pagas ${posicao ? `na posição de ${dia(posicao)}` : 'no fim dele'}, menos os chargebacks de pedidos pagos antes dele. Quem foi estornado no próprio período sai das duas pontas.`}
+      actions={
+        <label
+          className="flex items-center gap-2 text-sm text-muted-foreground"
+          title="Como estavam os pedidos no começo deste dia. Vazio = fim do período. Serve para comparar com um arquivo exportado depois do fim do período."
+        >
+          Posição em
+          <input
+            type="date"
+            value={posicao}
+            min={range.ate}
+            onChange={(e) => onPosicao(e.target.value)}
+            className="rounded-md border border-input bg-background px-2 py-1 text-sm text-foreground"
+          />
+          {posicao && (
+            <button type="button" onClick={() => onPosicao('')} className="text-xs underline underline-offset-2">
+              fim do período
+            </button>
+          )}
+        </label>
+      }
     >
       {q.isError && !q.data ? (
         <ErrorState error={q.error} onRetry={() => void q.refetch()} />

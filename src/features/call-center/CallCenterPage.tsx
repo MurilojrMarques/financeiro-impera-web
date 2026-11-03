@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { KpiCard } from '@/components/cards/KpiCard';
 import { KpiGrid } from '@/components/cards/KpiGrid';
@@ -34,6 +35,8 @@ const KEYS: ExtraFilterKey[] = ['loja', 'produto', 'metodo'];
 const RECUP_LABEL: Record<string, string> = { PIX: 'Pix', BOLETO: 'Boleto', ABANDONO: 'Abandono', OUTROS: 'Outros tipos', NAO_INFORMADO: 'Não informado' };
 
 export default function CallCenterPage() {
+  // "Como estavam os pedidos" no começo deste dia (AAAA-MM-DD); vazio = fim do período. Vale para os cards e o bloco do fechamento.
+  const [posicaoFechamento, setPosicaoFechamento] = useState('');
   const { apiParams, range } = useFilters();
   const { can } = usePermissions();
   const verCustos = can('call-center.custos');
@@ -50,7 +53,7 @@ export default function CallCenterPage() {
   const comissoes = useReport('call-center', 'comissoes', callCenterService.comissoes, params);
   const rc = useWithComparison<CallCenterReceitaCustos>('call-center', 'receita-custos', callCenterService.receitaCustos, { keys: KEYS });
   // Fechamento na fórmula do dono (Financeiro/Admin): é ele quem dá os números de Faturamento, Pedidos, Ticket e Comissão.
-  const fechamento = useReport('call-center', 'fechamento', callCenterService.fechamento, { de: range.de, ate: range.ate }, { enabled: verCustos, autoRefresh: false });
+  const fechamento = useReport('call-center', 'fechamento', callCenterService.fechamento, { de: range.de, ate: range.ate, ...(posicaoFechamento ? { posicao: posicaoFechamento } : {}) }, { enabled: verCustos, autoRefresh: false });
   const lancamentos = useReport('custos', 'resumo#call-center', (p, s) => custosService.resumo(p, s), { de: range.de, ate: range.ate, grupo: 'CALL_CENTER' }, { enabled: verCustos });
 
   const cur = resumo.current;
@@ -123,7 +126,7 @@ export default function CallCenterPage() {
         <KpiCard label="Margem do Call Center" format="percent" value={rcr?.margemBp == null ? undefined : rcr.margemBp / 100} loading={rcLoading} unavailableReason={semCustos} comparison={cmpRc(rcPrev?.margemBp == null ? undefined : rcPrev.margemBp / 100)} />
       </KpiGrid>
 
-      {verCustos && <FechamentoCallCenter />}
+      {verCustos && <FechamentoCallCenter posicao={posicaoFechamento} onPosicao={setPosicaoFechamento} />}
 
       <ReceitaCustosCallCenter q={rc} />
 
