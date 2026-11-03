@@ -11,11 +11,23 @@ export interface FechamentoContagem {
   totalCentavos: number;
 }
 
+/** Uma decisão manual do financeiro sobre um pedido no fechamento do mês; nunca muda a venda, só este fechamento. */
+export interface FechamentoAjuste {
+  pedido: string;
+  acao: 'INCLUIR_VENDA' | 'EXCLUIR_VENDA';
+  motivo: string;
+  /** `false` quando o ajuste não encontrou efeito (pedido já contado, já revertido ou sem origem Call/Whats) */
+  aplicado: boolean;
+  /** positivo ao incluir, negativo ao excluir, em centavos */
+  efeitoCentavos: number;
+}
+
 export interface CallCenterFechamento {
   mes: string;
   periodo: { de: string; ate: string };
   vendas: { pedidos: number; totalCentavos: number; porMetodo: FechamentoMetodo[] };
   chargebacks: FechamentoContagem;
+  ajustes: FechamentoAjuste[];
   comissao: { percentual: number; vendasCentavos: number; descontoChargebackCentavos: number; liquidaCentavos: number };
   avisos: {
     semOrigem: FechamentoContagem;

@@ -165,6 +165,23 @@ export function FechamentoCallCenter({ posicao, onPosicao }: { posicao: string; 
             </div>
           </div>
 
+          {f.ajustes.length > 0 && (
+            <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-xs">
+              <p className="mb-1 font-medium text-foreground">Ajustes manuais neste fechamento</p>
+              <ul className="list-disc space-y-1 pl-4 text-muted-foreground">
+                {f.ajustes.map((a) => (
+                  <li key={`${a.pedido}-${a.acao}`}>
+                    <strong className="font-medium text-foreground">
+                      Pedido {a.pedido} {a.acao === 'INCLUIR_VENDA' ? 'incluído como venda' : 'retirado das vendas'}
+                      {a.aplicado ? ` (${a.efeitoCentavos > 0 ? '+' : '−'}${formatCurrency(Math.abs(a.efeitoCentavos))})` : ' (sem efeito: o pedido já conta, foi revertido ou não é Call/Whats)'}:
+                    </strong>{' '}
+                    {a.motivo}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {temAviso && (
             <div className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
               <p className="mb-1 font-medium text-foreground">O que ficou de fora ou pede atenção</p>
