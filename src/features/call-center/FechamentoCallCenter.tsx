@@ -48,7 +48,7 @@ export function FechamentoCallCenter() {
   return (
     <ContentSection
       title="Fechamento do Call Center"
-      description={`Fórmula do fechamento do dono, de ${dia(range.de)} a ${dia(range.ate)}: vendas de origem Call ou Whats pagas no período e ainda pagas, menos os chargebacks de pedidos pagos antes dele. Quem foi estornado no próprio período sai das duas pontas.`}
+      description={`Fórmula do fechamento do dono, de ${dia(range.de)} a ${dia(range.ate)}: vendas de origem Call ou Whats pagas no período e ainda pagas no fim dele, menos os chargebacks de pedidos pagos antes dele. Quem foi estornado no próprio período sai das duas pontas.`}
     >
       {q.isError && !q.data ? (
         <ErrorState error={q.error} onRetry={() => void q.refetch()} />
@@ -152,7 +152,7 @@ export function FechamentoCallCenter() {
                 <Aviso c={f.avisos.semOrigem}>vendas pagas no período sem a origem do Pagah (vendedor ainda sem origem cadastrada). Não dá para saber se são Call ou Whats, então não entram.</Aviso>
                 <Aviso c={f.avisos.chargebacksSemOrigem}>estornos e chargebacks do período sem a origem do Pagah. Ficam fora do desconto.</Aviso>
                 <Aviso c={f.avisos.revertidasNoMes}>vendas do período estornadas ou com chargeback dentro dele. Somem das duas pontas, como na planilha do dono.</Aviso>
-                <Aviso c={f.avisos.revertidasDepois}>vendas do período revertidas só depois dele. Não entram agora e pesam no período da reversão.</Aviso>
+                <Aviso c={f.avisos.revertidasDepois}>vendas do período revertidas só depois dele. Contam como venda agora, e a reversão pesa no período seguinte.</Aviso>
                 <Aviso c={f.avisos.possivelJurosNosChargebacks}>chargebacks de cartão parcelado com valor sem juros igual ao total. Pode haver juros dentro do número.</Aviso>
               </ul>
             </div>
