@@ -75,7 +75,8 @@ export function FechamentoCallCenter({ posicao, onPosicao }: { posicao: string; 
       f.avisos.chargebacksSemOrigem.pedidos +
       f.avisos.revertidasNoMes.pedidos +
       f.avisos.revertidasDepois.pedidos +
-      f.avisos.possivelJurosNosChargebacks.pedidos >
+      f.avisos.possivelJurosNosChargebacks.pedidos +
+      f.avisos.chargebacksPixBoletoSemDesconto.pedidos >
       0;
   const pct = f ? `${Math.round(f.comissao.percentual * 100)}%` : '20%';
 
@@ -228,8 +229,12 @@ export function FechamentoCallCenter({ posicao, onPosicao }: { posicao: string; 
                 {f.ajustes.map((a) => (
                   <li key={`${a.pedido}-${a.acao}`}>
                     <strong className="font-medium text-foreground">
-                      Pedido {a.pedido} {a.acao === 'INCLUIR_VENDA' ? 'incluído como venda' : 'retirado das vendas'}
-                      {a.aplicado ? ` (${a.efeitoCentavos > 0 ? '+' : '−'}${formatCurrency(Math.abs(a.efeitoCentavos))})` : ' (sem efeito: o pedido já conta, foi revertido ou não é Call/Whats)'}:
+                      Pedido {a.pedido} {a.acao === 'INCLUIR_VENDA' ? 'incluído como venda' : a.acao === 'EXCLUIR_VENDA' ? 'retirado das vendas' : 'incluído como chargeback'}
+                      {a.aplicado
+                        ? ` (${a.efeitoCentavos > 0 ? '+' : '−'}${formatCurrency(Math.abs(a.efeitoCentavos))})`
+                        : a.acao === 'INCLUIR_CHARGEBACK'
+                          ? ' (sem efeito: a base já traz o pedido como chargeback)'
+                          : ' (sem efeito: o pedido já conta, foi revertido ou não é Call/Whats)'}:
                     </strong>{' '}
                     {a.motivo}
                   </li>
@@ -247,6 +252,7 @@ export function FechamentoCallCenter({ posicao, onPosicao }: { posicao: string; 
                 <Aviso c={f.avisos.revertidasNoMes}>vendas do período estornadas ou com chargeback dentro dele. Somem das duas pontas, como na planilha do dono.</Aviso>
                 <Aviso c={f.avisos.revertidasDepois}>vendas do período revertidas só depois dele. Contam como venda agora, e a reversão pesa no período seguinte.</Aviso>
                 <Aviso c={f.avisos.possivelJurosNosChargebacks}>chargebacks de cartão parcelado com valor sem juros igual ao total. Pode haver juros dentro do número.</Aviso>
+                <Aviso c={f.avisos.chargebacksPixBoletoSemDesconto}>chargebacks de Pix ou boleto, que estão na lista mas não pesam no desconto: o Pagah não manda valor sem juros e a planilha do dono os conta como zero. O valor é o real do pedido, que não foi descontado.</Aviso>
               </ul>
             </div>
           )}

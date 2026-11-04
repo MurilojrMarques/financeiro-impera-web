@@ -14,8 +14,10 @@ export interface FechamentoContagem {
 /** Uma decisão manual do financeiro sobre um pedido no fechamento do mês; nunca muda a venda, só este fechamento. */
 export interface FechamentoAjuste {
   pedido: string;
-  acao: 'INCLUIR_VENDA' | 'EXCLUIR_VENDA';
+  acao: 'INCLUIR_VENDA' | 'EXCLUIR_VENDA' | 'INCLUIR_CHARGEBACK';
   motivo: string;
+  /** só em INCLUIR_CHARGEBACK: o valor sem juros que o Pagah mostra para o pedido, em centavos */
+  valorCentavos: number | null;
   /** `false` quando o ajuste não encontrou efeito (pedido já contado, já revertido ou sem origem Call/Whats) */
   aplicado: boolean;
   /** positivo ao incluir, negativo ao excluir, em centavos */
@@ -43,5 +45,7 @@ export interface CallCenterFechamento {
     revertidasNoMes: FechamentoContagem;
     revertidasDepois: FechamentoContagem;
     possivelJurosNosChargebacks: FechamentoContagem;
+    /** Pix e boleto na lista de chargebacks: o Pagah não manda valor sem juros e a planilha do dono os conta como zero (aqui o valor real, não descontado) */
+    chargebacksPixBoletoSemDesconto: FechamentoContagem;
   };
 }
