@@ -24,8 +24,8 @@ import { mesAtual, mesLabel } from './rh-format';
 /**
  * Comissão do time do Front por pessoa: criativos e VSL (5% do MC BR; Elias 7,5%), otimizações validadas (R$ 500), liderança do Elias,
  * editor, gestor e o fixo do Iago. O MC BR dos criativos vem do sistema de copy; o das VSLs, do RedTrack por landing. O que ainda não bate
- * com a folha aparece "em implementação" e fica fora do total. A lista traz só quem tem valor a pagar. O RH vincula cada pessoa ao colaborador, lança as otimizações, cadastra as VSLs
- * sem dono e lança o valor na folha quando o mês fecha no copy. A área é só do RH e do CEO (o CEO só lê).
+ * com a folha aparece "em implementação" e fica fora do total. A lista traz só quem tem valor a pagar. O RH vincula cada pessoa ao colaborador, lança as otimizações
+ * e lança o valor na folha quando o mês fecha no copy. Dono e editor das VSLs não são decididos aqui. A área é só do RH e do CEO (o CEO só lê).
  */
 export default function ComissoesRhPage() {
   const qc = useQueryClient();
@@ -34,7 +34,6 @@ export default function ComissoesRhPage() {
   const { sp, update } = useUrlSearchParams();
   const mes = sp.get('mes') ?? mesAtual();
   const [otimAberta, setOtimAberta] = useState(false);
-  const [vslAberta, setVslAberta] = useState(false);
 
   const q = useQuery({
     queryKey: ['rh', 'comissoes', mes],
@@ -69,7 +68,6 @@ export default function ComissoesRhPage() {
   const ok = d?.disponivel === true ? d : null;
   const sugestoes = ok?.sugestoes ?? {};
   const todosColabs = pessoas.data ?? [];
-  const semDono = ok?.vsl?.semDono ?? [];
   const nomesCopy = (ok?.itens ?? []).filter((i) => i.tipo === 'COPYWRITER').map((i) => i.nome);
 
   const motivoSemLancar = !ok
@@ -78,15 +76,13 @@ export default function ComissoesRhPage() {
       ? 'O mês ainda não fechou no sistema de copy: o valor é provisório e só vai para a folha depois do fechamento.'
       : ok.vsl && !ok.vsl.disponivel
         ? 'Não foi possível ler as VSLs no RedTrack agora: tente de novo para não lançar um valor incompleto.'
-        : semDono.length > 0
-          ? 'Cadastre o dono das VSLs novas para poder lançar.'
-          : !ok.folha
-            ? `Gere a folha de ${mesLabel(mes)} antes de lançar.`
-            : ok.folha.status === 'FECHADA'
-              ? 'A folha deste mês está fechada.'
-              : ok.totais && ok.totais.semVinculo > 0
-                ? 'Vincule todas as pessoas com valor a pagar a um colaborador para poder lançar.'
-                : null;
+        : !ok.folha
+          ? `Gere a folha de ${mesLabel(mes)} antes de lançar.`
+          : ok.folha.status === 'FECHADA'
+            ? 'A folha deste mês está fechada.'
+            : ok.totais && ok.totais.semVinculo > 0
+              ? 'Vincule todas as pessoas com valor a pagar a um colaborador para poder lançar.'
+              : null;
 
   const traco = <span className="text-muted-foreground">—</span>;
   const valor = (i: RhComissaoItem, c: number | null) => (i.status === 'EM_IMPLEMENTACAO' || c === null ? traco : <CurrencyValue centavos={c} />);
@@ -183,7 +179,7 @@ export default function ComissoesRhPage() {
               onChange={(e) => update((prev) => { const n = new URLSearchParams(prev); n.set('mes', e.target.value || mesAtual()); return n; })}
               className="h-9 w-full sm:w-44"
             />
-            {ehRh && ok?.completa && <Button variant="outline" onClick={() => setOtimAberta(true)}>Otimizações</Button>}
+            {ehRh && ok?.completa && ok.otimizacoes?.fonte !== 'COPY' && <Button variant="outline" onClick={() => setOtimAberta(true)}>Otimizações</Button>}
             {ehRh && (
               <Button disabled={!ok || !!motivoSemLancar || lancar.isPending} onClick={() => lancar.mutate()}>
                 Lançar na folha
@@ -197,12 +193,7 @@ export default function ComissoesRhPage() {
         {ok?.estado === 'PROVISORIO' && <Notice tone="warning">Mês em aberto no sistema de copy: os valores são provisórios e mudam até o fechamento.</Notice>}
         {ok && !ok.completa && <Notice tone="info">Antes de setembro/2026 vale só o 5% do MC BR dos criativos: VSL, otimizações e as demais regras começam em setembro.</Notice>}
         {ok?.vsl && !ok.vsl.disponivel && <Notice tone="warning">Não foi possível ler as VSLs no RedTrack ({ok.vsl.mensagem ?? 'sem resposta'}). Os valores de VSL, liderança, editor, gestor e fixo não aparecem até o RedTrack voltar.</Notice>}
-        {semDono.length > 0 && (
-          <Notice tone="warning">
-            {semDono.length === 1 ? '1 VSL sem dono' : `${semDono.length} VSLs sem dono`} no RedTrack neste mês: o MC BR dela não entra na comissão de ninguém e o lançamento fica bloqueado.{' '}
-            {ehRh && <button type="button" className="font-medium underline" onClick={() => setVslAberta(true)}>Cadastrar dono</button>}
-          </Notice>
-        )}
+        {ok?.completa && ok.otimizacoes?.fonte === 'COPY' && <Notice tone="info">O bônus de lead e MLD deste mês vem do sistema de copy, confirmado pelo admin: a coluna Otimizações já traz o que ele decidiu e não se lança aqui.</Notice>}
         {ehRh && ok && motivoSemLancar && ok.estado === 'FECHADO' && <Notice tone="info">{motivoSemLancar}</Notice>}
         {ok && ok.totais && (
           <KpiGrid cols={3}>
@@ -227,7 +218,6 @@ export default function ComissoesRhPage() {
         )}
       </div>
       {ehRh && <OtimizacoesDialog open={otimAberta} onOpenChange={setOtimAberta} mes={mes} copywriters={nomesCopy} />}
-      {ehRh && <VslDialog open={vslAberta} onOpenChange={setVslAberta} semDono={semDono} donos={[...nomesCopy, 'EMPRESA']} />}
     </>
   );
 }
@@ -290,46 +280,6 @@ function OtimizacoesDialog({ open, onOpenChange, mes, copywriters }: { open: boo
             ))}
           </ul>
         </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function VslDialog({ open, onOpenChange, semDono, donos }: { open: boolean; onOpenChange: (o: boolean) => void; semDono: { vsl: string; mcBrCentavos: number }[]; donos: string[] }) {
-  const qc = useQueryClient();
-  const [dono, setDono] = useState<Record<string, string>>({});
-  const [editor, setEditor] = useState<Record<string, string>>({});
-  const salvar = useMutation({
-    mutationFn: (vsl: string) => rhService.salvarVsl({ chave: vsl, dono: dono[vsl] ?? null, editor: editor[vsl]?.trim() || null, mesmaVsl: null }),
-    onSuccess: () => {
-      toast.success('VSL cadastrada.');
-      void qc.invalidateQueries({ queryKey: ['rh', 'comissoes'] });
-    },
-    onError: () => toast.error('Não foi possível cadastrar a VSL.'),
-  });
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="lg">
-        <DialogHeader>
-          <DialogTitle>VSLs sem dono</DialogTitle>
-          <DialogDescription>Escolha o copywriter dono de cada VSL (quem fez ou ripou) e, se houver, o editor da 1ª versão. Ripagem e página de oferta não têm editor.</DialogDescription>
-        </DialogHeader>
-        <ul className="divide-y rounded-md border text-sm">
-          {semDono.length === 0 && <li className="p-3 text-muted-foreground">Todas as VSLs deste mês têm dono.</li>}
-          {semDono.map((v) => (
-            <li key={v.vsl} className="space-y-2 p-3">
-              <div className="flex items-center justify-between gap-2"><span className="font-medium">{v.vsl}</span><CurrencyValue centavos={v.mcBrCentavos} /></div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Select value={dono[v.vsl] ?? ''} onValueChange={(x) => setDono((p) => ({ ...p, [v.vsl]: x }))}>
-                  <SelectTrigger className="h-8 w-44" aria-label={`Dono de ${v.vsl}`}><SelectValue placeholder="Dono da VSL" /></SelectTrigger>
-                  <SelectContent>{donos.map((n) => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
-                </Select>
-                <Input className="h-8 w-44" placeholder="Editor (opcional)" value={editor[v.vsl] ?? ''} maxLength={40} onChange={(e) => setEditor((p) => ({ ...p, [v.vsl]: e.target.value }))} aria-label={`Editor de ${v.vsl}`} />
-                <Button size="sm" disabled={!dono[v.vsl] || salvar.isPending} onClick={() => salvar.mutate(v.vsl)}>Salvar</Button>
-              </div>
-            </li>
-          ))}
-        </ul>
       </DialogContent>
     </Dialog>
   );
