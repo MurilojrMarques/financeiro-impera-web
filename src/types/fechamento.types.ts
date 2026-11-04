@@ -1,4 +1,4 @@
-/** `GET /call-center/fechamento?mes=AAAA-MM`: o fechamento do Call Center na fórmula da planilha do dono. Dinheiro em centavos. */
+/** `GET /call-center/fechamento?mes=AAAA-MM`: o fechamento do Call Center na fórmula da planilha de fechamento. Dinheiro em centavos. */
 export interface FechamentoMetodo {
   metodo: 'CARTAO' | 'BOLETO' | 'PIX';
   pedidos: number;
@@ -45,7 +45,7 @@ export interface CallCenterFechamento {
     revertidasNoMes: FechamentoContagem;
     revertidasDepois: FechamentoContagem;
     possivelJurosNosChargebacks: FechamentoContagem;
-    /** Pix e boleto na lista de chargebacks: o Pagah não manda valor sem juros e a planilha do dono os conta como zero (aqui o valor real, não descontado) */
+    /** Pix e boleto na lista de chargebacks: o Pagah não manda valor sem juros e a planilha de fechamento os conta como zero (aqui o valor real, não descontado) */
     chargebacksPixBoletoSemDesconto: FechamentoContagem;
   };
 }

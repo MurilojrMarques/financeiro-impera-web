@@ -39,7 +39,7 @@ function Aviso({ c, children }: { c: FechamentoContagem; children: string }) {
 const TH = 'py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground';
 
 /**
- * O fechamento do Call Center na fórmula da planilha do dono ("Fechamento", aba do arquivo dele), para o período do filtro
+ * O fechamento do Call Center na fórmula da planilha de fechamento ("Fechamento", aba do arquivo), para o período do filtro
  * do topo: vendas de origem Call ou Whats pagas no período e ainda pagas, a 20%, menos os chargebacks de pedidos pagos
  * antes do período. Só Financeiro e Administrador. Os números vêm do que o Pagah entrega direto: a origem sai do
  * vendedor de cada pedido.
@@ -83,7 +83,7 @@ export function FechamentoCallCenter({ posicao, onPosicao }: { posicao: string; 
   return (
     <ContentSection
       title="Fechamento do Call Center"
-      description={`Fórmula do fechamento do dono, de ${dia(range.de)} a ${dia(range.ate)}: vendas de origem Call ou Whats pagas no período e ainda pagas ${f?.posicao.em ? `na posição de ${dia(f.posicao.em)}${fechadoEm ? ' (data em que o mês foi fechado)' : ''}` : 'no fim dele'}, menos os chargebacks de pedidos pagos antes dele. Quem foi estornado no próprio período sai das duas pontas.`}
+      description={`Fórmula do fechamento manual, de ${dia(range.de)} a ${dia(range.ate)}: vendas de origem Call ou Whats pagas no período e ainda pagas ${f?.posicao.em ? `na posição de ${dia(f.posicao.em)}${fechadoEm ? ' (data em que o mês foi fechado)' : ''}` : 'no fim dele'}, menos os chargebacks de pedidos pagos antes dele. Quem foi estornado no próprio período sai das duas pontas.`}
       actions={
         fechadoEm && !posicao ? (
           <div className="flex items-center gap-2 text-sm">
@@ -216,7 +216,7 @@ export function FechamentoCallCenter({ posicao, onPosicao }: { posicao: string; 
                   </tbody>
                 </table>
                 <p className="pt-2 text-xs text-muted-foreground">
-                  As taxas de Pagarme e Appmax que entram no total final da planilha do dono não estão aqui: dependem da operadora de cada pedido.
+                  As taxas de Pagarme e Appmax que entram no total final da planilha de fechamento não estão aqui: dependem da operadora de cada pedido.
                 </p>
               </div>
             </div>
@@ -249,10 +249,10 @@ export function FechamentoCallCenter({ posicao, onPosicao }: { posicao: string; 
               <ul className="list-disc space-y-1 pl-4">
                 <Aviso c={f.avisos.semOrigem}>vendas pagas no período sem a origem do Pagah (vendedor ainda sem origem cadastrada). Não dá para saber se são Call ou Whats, então não entram.</Aviso>
                 <Aviso c={f.avisos.chargebacksSemOrigem}>estornos e chargebacks do período sem a origem do Pagah. Ficam fora do desconto.</Aviso>
-                <Aviso c={f.avisos.revertidasNoMes}>vendas do período estornadas ou com chargeback dentro dele. Somem das duas pontas, como na planilha do dono.</Aviso>
+                <Aviso c={f.avisos.revertidasNoMes}>vendas do período estornadas ou com chargeback dentro dele. Somem das duas pontas, como na planilha de fechamento.</Aviso>
                 <Aviso c={f.avisos.revertidasDepois}>vendas do período revertidas só depois dele. Contam como venda agora, e a reversão pesa no período seguinte.</Aviso>
                 <Aviso c={f.avisos.possivelJurosNosChargebacks}>chargebacks de cartão parcelado com valor sem juros igual ao total. Pode haver juros dentro do número.</Aviso>
-                <Aviso c={f.avisos.chargebacksPixBoletoSemDesconto}>chargebacks de Pix ou boleto, que estão na lista mas não pesam no desconto: o Pagah não manda valor sem juros e a planilha do dono os conta como zero. O valor é o real do pedido, que não foi descontado.</Aviso>
+                <Aviso c={f.avisos.chargebacksPixBoletoSemDesconto}>chargebacks de Pix ou boleto, que estão na lista mas não pesam no desconto: o Pagah não manda valor sem juros e a planilha de fechamento os conta como zero. O valor é o real do pedido, que não foi descontado.</Aviso>
               </ul>
             </div>
           )}

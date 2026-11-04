@@ -52,7 +52,7 @@ export default function CallCenterPage() {
   const recup = useReport('call-center', 'recuperacoes', callCenterService.recuperacoes, params);
   const comissoes = useReport('call-center', 'comissoes', callCenterService.comissoes, params);
   const rc = useWithComparison<CallCenterReceitaCustos>('call-center', 'receita-custos', callCenterService.receitaCustos, { keys: KEYS });
-  // Fechamento na fórmula do dono (Financeiro/Admin): é ele quem dá os números de Faturamento, Pedidos, Ticket e Comissão.
+  // Fechamento na fórmula da planilha (Financeiro/Admin): é ela quem dá os números de Faturamento, Pedidos, Ticket e Comissão.
   const fechamento = useReport('call-center', 'fechamento', callCenterService.fechamento, { de: range.de, ate: range.ate, ...(posicaoFechamento ? { posicao: posicaoFechamento } : {}) }, { enabled: verCustos, autoRefresh: false });
   const lancamentos = useReport('custos', 'resumo#call-center', (p, s) => custosService.resumo(p, s), { de: range.de, ate: range.ate, grupo: 'CALL_CENTER' }, { enabled: verCustos });
 
@@ -88,7 +88,7 @@ export default function CallCenterPage() {
           comparison={verCustos ? undefined : cmpRc(rcPrev?.faturamentoCentavos)}
           description={
             verCustos
-              ? `Vendas de origem Call ou Whats pagas no período e ainda pagas (fórmula do fechamento do dono). ${fech?.posicao.em ? `Posição em ${fech.posicao.em.split('-').reverse().join('/')}${fech.posicao.fonte === 'FECHAMENTO' ? ' (mês fechado)' : ''}.` : 'Posição no fim do período.'}`
+              ? `Vendas de origem Call ou Whats pagas no período e ainda pagas (fórmula do fechamento manual). ${fech?.posicao.em ? `Posição em ${fech.posicao.em.split('-').reverse().join('/')}${fech.posicao.fonte === 'FECHAMENTO' ? ' (mês fechado)' : ''}.` : 'Posição no fim do período.'}`
               : rcr
                 ? `Valor sem juros dos pagamentos. Líquida após estornos: ${formatCurrency(rcr.receitaLiquidaCentavos)}`
                 : undefined
